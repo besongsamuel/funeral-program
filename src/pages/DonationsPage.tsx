@@ -8,7 +8,7 @@ export function DonationsPage() {
   const { data, isLoading } = useMemorial();
   const reduced = useReducedMotion();
 
-  if (isLoading || !data) return null;
+  if (isLoading && !data) return null;
 
   const { donationCauses } = data;
 

@@ -61,7 +61,7 @@ export function FamilyPage() {
   const { data, isLoading } = useMemorial();
   const reduced = useReducedMotion();
 
-  if (isLoading || !data) return null;
+  if (isLoading && !data) return null;
 
   const { familyMembers } = data;
   const roots = familyMembers.filter((m) => !m.parentId || !familyMembers.find((p) => p.id === m.parentId));

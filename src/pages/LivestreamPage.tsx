@@ -3,7 +3,7 @@ import { SectionHeading } from '@/components/ui/SectionHeading';
 
 export function LivestreamPage() {
   const { data, isLoading } = useMemorial();
-  if (isLoading || !data) return null;
+  if (isLoading && !data) return null;
 
   const livestream = data.mediaItems.find((m) => m.kind === 'livestream');
 

@@ -43,11 +43,13 @@ This generates `amplify_outputs.json` which the frontend auto-loads.
 
 ### Seed Data
 
+After the sandbox is deployed, copy the memorial content from `src/lib/demo-data.ts` into Amplify Data:
+
 ```bash
 yarn seed
 ```
 
-Follow the script output to create records in your Amplify Data tables matching `src/lib/demo-data.ts`.
+The public site then reads that data over the AppSync API key (no sign-in). Keep `yarn sandbox` running, or regenerate `amplify_outputs.json`, so the frontend can reach the backend.
 
 ### AI Assistant
 

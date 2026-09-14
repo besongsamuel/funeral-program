@@ -19,6 +19,7 @@ const schema = a.schema({
     })
     .secondaryIndexes((index) => [index('slug')])
     .authorization((allow) => [
+      allow.publicApiKey().to(['read']),
       allow.guest().to(['read']),
       allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
     ]),
@@ -34,6 +35,7 @@ const schema = a.schema({
     })
     .secondaryIndexes((index) => [index('memorialId').sortKeys(['sortOrder'])])
     .authorization((allow) => [
+      allow.publicApiKey().to(['read']),
       allow.guest().to(['read']),
       allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
     ]),
@@ -49,6 +51,7 @@ const schema = a.schema({
     })
     .secondaryIndexes((index) => [index('memorialId').sortKeys(['sortOrder'])])
     .authorization((allow) => [
+      allow.publicApiKey().to(['read']),
       allow.guest().to(['read']),
       allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
     ]),
@@ -65,6 +68,7 @@ const schema = a.schema({
     })
     .secondaryIndexes((index) => [index('memorialId').sortKeys(['sortOrder'])])
     .authorization((allow) => [
+      allow.publicApiKey().to(['read']),
       allow.guest().to(['read']),
       allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
     ]),
@@ -86,6 +90,7 @@ const schema = a.schema({
     })
     .secondaryIndexes((index) => [index('memorialId')])
     .authorization((allow) => [
+      allow.publicApiKey().to(['read']),
       allow.guest().to(['read']),
       allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
     ]),
@@ -101,6 +106,7 @@ const schema = a.schema({
     })
     .secondaryIndexes((index) => [index('memorialId').sortKeys(['sortOrder'])])
     .authorization((allow) => [
+      allow.publicApiKey().to(['read']),
       allow.guest().to(['read']),
       allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
     ]),
@@ -114,6 +120,7 @@ const schema = a.schema({
     })
     .secondaryIndexes((index) => [index('memorialId').sortKeys(['sortOrder'])])
     .authorization((allow) => [
+      allow.publicApiKey().to(['read']),
       allow.guest().to(['read']),
       allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
     ]),
@@ -131,6 +138,7 @@ const schema = a.schema({
       index('albumId').sortKeys(['sortOrder']),
     ])
     .authorization((allow) => [
+      allow.publicApiKey().to(['read']),
       allow.guest().to(['read']),
       allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
     ]),
@@ -149,6 +157,7 @@ const schema = a.schema({
       index('memorialId').sortKeys(['status']),
     ])
     .authorization((allow) => [
+      allow.publicApiKey().to(['read', 'create']),
       allow.guest().to(['read', 'create']),
       allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
     ]),
@@ -166,6 +175,7 @@ const schema = a.schema({
       index('memorialId').sortKeys(['status']),
     ])
     .authorization((allow) => [
+      allow.publicApiKey().to(['read', 'create']),
       allow.guest().to(['read', 'create']),
       allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
     ]),
@@ -182,6 +192,7 @@ const schema = a.schema({
     })
     .secondaryIndexes((index) => [index('memorialId').sortKeys(['sortOrder'])])
     .authorization((allow) => [
+      allow.publicApiKey().to(['read']),
       allow.guest().to(['read']),
       allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
     ]),
@@ -198,6 +209,7 @@ const schema = a.schema({
     })
     .secondaryIndexes((index) => [index('memorialId').sortKeys(['sortOrder'])])
     .authorization((allow) => [
+      allow.publicApiKey().to(['read']),
       allow.guest().to(['read']),
       allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
     ]),
@@ -213,6 +225,7 @@ const schema = a.schema({
     })
     .secondaryIndexes((index) => [index('memorialId')])
     .authorization((allow) => [
+      allow.publicApiKey().to(['read']),
       allow.guest().to(['read']),
       allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
     ]),
@@ -243,6 +256,7 @@ const schema = a.schema({
     })
     .secondaryIndexes((index) => [index('memorialId')])
     .authorization((allow) => [
+      allow.publicApiKey().to(['read']),
       allow.guest().to(['read']),
       allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
     ]),
@@ -256,6 +270,7 @@ const schema = a.schema({
     })
     .secondaryIndexes((index) => [index('memorialId').sortKeys(['sortOrder'])])
     .authorization((allow) => [
+      allow.publicApiKey().to(['read']),
       allow.guest().to(['read']),
       allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
     ]),
@@ -269,6 +284,7 @@ const schema = a.schema({
     })
     .secondaryIndexes((index) => [index('memorialId')])
     .authorization((allow) => [
+      allow.publicApiKey().to(['read']),
       allow.guest().to(['read']),
       allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
     ]),
@@ -308,9 +324,9 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'userPool',
+    defaultAuthorizationMode: 'apiKey',
     apiKeyAuthorizationMode: {
-      expiresInDays: 30,
+      expiresInDays: 365,
     },
   },
 });

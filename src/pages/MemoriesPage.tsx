@@ -8,7 +8,7 @@ export function MemoriesPage() {
   const { data, isLoading } = useMemorial();
   const reduced = useReducedMotion();
 
-  if (isLoading || !data) return null;
+  if (isLoading && !data) return null;
 
   const videos = data.mediaItems.filter((m) => m.kind === 'video');
   const music = data.mediaItems.filter((m) => m.kind === 'audio');

@@ -4,7 +4,7 @@ import { Printer } from 'lucide-react';
 
 export function ObituaryPage() {
   const { data, isLoading } = useMemorial();
-  if (isLoading || !data) return null;
+  if (isLoading && !data) return null;
 
   const { memorial } = data;
 

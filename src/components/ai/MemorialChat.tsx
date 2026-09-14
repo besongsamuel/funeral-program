@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Sparkles } from 'lucide-react';
 import { useMemorial } from '@/hooks/useMemorial';
@@ -30,6 +31,39 @@ function getStoredMessages(): ChatMessage[] {
 
 function storeMessages(messages: ChatMessage[]) {
   sessionStorage.setItem('memorial-chat-messages', JSON.stringify(messages.slice(-20)));
+}
+
+function renderInlineMarkdown(text: string): ReactNode[] {
+  const parts = text.split(/(\[.*?\]\(.*?\)|\*\*[^*]+\*\*)/g).filter((part) => part.length > 0);
+  return parts.map((part, i) => {
+    const linkMatch = part.match(/^\[(.*?)\]\((.*?)\)$/);
+    if (linkMatch) {
+      const href = linkMatch[2];
+      const label = linkMatch[1];
+      const className = 'font-medium text-memorial-600 underline hover:text-memorial-800';
+      if (href.startsWith('/')) {
+        return (
+          <Link key={i} to={href} className={className}>
+            {label}
+          </Link>
+        );
+      }
+      return (
+        <a key={i} href={href} className={className}>
+          {label}
+        </a>
+      );
+    }
+    const boldMatch = part.match(/^\*\*(.+)\*\*$/);
+    if (boldMatch) {
+      return (
+        <strong key={i} className="font-semibold text-gray-900">
+          {boldMatch[1]}
+        </strong>
+      );
+    }
+    return <span key={i}>{part}</span>;
+  });
 }
 
 function localAnswer(question: string, ctx: ReturnType<typeof useMemorial>['data']): string {
@@ -142,18 +176,12 @@ export function MemorialChat() {
   };
 
   const renderContent = (content: string) => {
-    const parts = content.split(/(\[.*?\]\(.*?\))/g);
-    return parts.map((part, i) => {
-      const linkMatch = part.match(/\[(.*?)\]\((.*?)\)/);
-      if (linkMatch) {
-        return (
-          <a key={i} href={linkMatch[2]} className="text-memorial-600 underline hover:text-memorial-800">
-            {linkMatch[1]}
-          </a>
-        );
-      }
-      return <span key={i}>{part}</span>;
-    });
+    const paragraphs = content.split(/\n+/).filter((p) => p.length > 0);
+    return paragraphs.map((paragraph, pi) => (
+      <p key={pi} className={pi === 0 ? undefined : 'mt-2'}>
+        {renderInlineMarkdown(paragraph)}
+      </p>
+    ));
   };
 
   return (

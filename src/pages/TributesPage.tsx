@@ -31,7 +31,7 @@ export function TributesPage() {
   const tributeForm = useForm<TributeForm>({ defaultValues: { isGuestbookSignature: false } });
   const storyForm = useForm<StoryForm>();
 
-  if (isLoading || !data) return null;
+  if (isLoading && !data) return null;
 
   const approvedTributes = data.tributes.filter((t) => t.status === 'approved');
   const guestbook = approvedTributes.filter((t) => t.isGuestbookSignature);

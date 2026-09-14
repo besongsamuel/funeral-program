@@ -21,9 +21,15 @@ function demoMemorial() {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getClient(): any {
+function getPublicClient(): any {
   if (!isAmplifyConfigured()) return null;
-  return generateClient({ authMode: 'identityPool' });
+  return generateClient({ authMode: 'apiKey' });
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getAdminClient(): any {
+  if (!isAmplifyConfigured()) return null;
+  return generateClient({ authMode: 'userPool' });
 }
 
 function withTimeout<T>(promise: Promise<T>, ms: number) {
@@ -35,8 +41,20 @@ function withTimeout<T>(promise: Promise<T>, ms: number) {
   ]);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function listAll(model: { list: (args: object) => Promise<any> }, filter: object) {
+  const items: unknown[] = [];
+  let nextToken: string | undefined;
+  do {
+    const result = await model.list({ filter, nextToken, limit: 1000, authMode: 'apiKey' });
+    items.push(...(result.data ?? []));
+    nextToken = result.nextToken;
+  } while (nextToken);
+  return items;
+}
+
 export async function getMemorialContext(slug = MEMORIAL_SLUG): Promise<MemorialContext> {
-  const client = getClient();
+  const client = getPublicClient();
   if (!client) return demoMemorial();
 
   try {
@@ -51,10 +69,13 @@ export async function getMemorialContext(slug = MEMORIAL_SLUG): Promise<Memorial
 async function loadFromAmplify(client: any, slug: string): Promise<MemorialContext> {
   const { data: memorials } = await client.models.Memorial.list({
     filter: { slug: { eq: slug } },
-    authMode: 'identityPool',
+    authMode: 'apiKey',
   });
   const memorial = memorials?.[0];
-  if (!memorial) return demoMemorial();
+  if (!memorial) {
+    console.warn(`No published memorial found for slug "${slug}" — using local content`);
+    return demoMemorial();
+  }
 
   const memorialId = memorial.id;
   const [
@@ -74,43 +95,46 @@ async function loadFromAmplify(client: any, slug: string): Promise<MemorialConte
     aiQuickQuestions,
     aiKnowledgeEntries,
   ] = await Promise.all([
-    client.models.BiographySection.list({ filter: { memorialId: { eq: memorialId } } }),
-    client.models.TimelineEvent.list({ filter: { memorialId: { eq: memorialId } } }),
-    client.models.FamilyMember.list({ filter: { memorialId: { eq: memorialId } } }),
-    client.models.FuneralEvent.list({ filter: { memorialId: { eq: memorialId } } }),
-    client.models.ProgramItem.list({ filter: { memorialId: { eq: memorialId } } }),
-    client.models.GalleryAlbum.list({ filter: { memorialId: { eq: memorialId } } }),
-    client.models.GalleryPhoto.list({ filter: { memorialId: { eq: memorialId } } }),
-    client.models.Tribute.list({ filter: { memorialId: { eq: memorialId }, status: { eq: 'approved' } } }),
-    client.models.Story.list({ filter: { memorialId: { eq: memorialId }, status: { eq: 'approved' } } }),
-    client.models.MediaItem.list({ filter: { memorialId: { eq: memorialId } } }),
-    client.models.DonationCause.list({ filter: { memorialId: { eq: memorialId } } }),
-    client.models.FamilyContact.list({ filter: { memorialId: { eq: memorialId } } }),
-    client.models.AiSettings.list({ filter: { memorialId: { eq: memorialId } } }),
-    client.models.AiQuickQuestion.list({ filter: { memorialId: { eq: memorialId } } }),
-    client.models.AiKnowledgeEntry.list({ filter: { memorialId: { eq: memorialId } } }),
+    listAll(client.models.BiographySection, { memorialId: { eq: memorialId } }),
+    listAll(client.models.TimelineEvent, { memorialId: { eq: memorialId } }),
+    listAll(client.models.FamilyMember, { memorialId: { eq: memorialId } }),
+    listAll(client.models.FuneralEvent, { memorialId: { eq: memorialId } }),
+    listAll(client.models.ProgramItem, { memorialId: { eq: memorialId } }),
+    listAll(client.models.GalleryAlbum, { memorialId: { eq: memorialId } }),
+    listAll(client.models.GalleryPhoto, { memorialId: { eq: memorialId } }),
+    listAll(client.models.Tribute, { memorialId: { eq: memorialId }, status: { eq: 'approved' } }),
+    listAll(client.models.Story, { memorialId: { eq: memorialId }, status: { eq: 'approved' } }),
+    listAll(client.models.MediaItem, { memorialId: { eq: memorialId } }),
+    listAll(client.models.DonationCause, { memorialId: { eq: memorialId } }),
+    listAll(client.models.FamilyContact, { memorialId: { eq: memorialId } }),
+    listAll(client.models.AiSettings, { memorialId: { eq: memorialId } }),
+    listAll(client.models.AiQuickQuestion, { memorialId: { eq: memorialId } }),
+    listAll(client.models.AiKnowledgeEntry, { memorialId: { eq: memorialId } }),
   ]);
 
   const sortByOrder = <T extends { sortOrder?: number | null }>(arr: T[]) =>
     [...arr].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
+  const sortByStart = <T extends { startsAt?: string | null }>(arr: T[]) =>
+    [...arr].sort((a, b) => (a.startsAt ?? '').localeCompare(b.startsAt ?? ''));
+
   return {
     memorial: memorial as Memorial,
-    biographySections: sortByOrder(biographySections.data ?? []) as MemorialContext['biographySections'],
-    timelineEvents: sortByOrder(timelineEvents.data ?? []) as MemorialContext['timelineEvents'],
-    familyMembers: sortByOrder(familyMembers.data ?? []) as MemorialContext['familyMembers'],
-    funeralEvents: (funeralEvents.data ?? []) as MemorialContext['funeralEvents'],
-    programItems: sortByOrder(programItems.data ?? []) as MemorialContext['programItems'],
-    galleryAlbums: sortByOrder(galleryAlbums.data ?? []) as MemorialContext['galleryAlbums'],
-    galleryPhotos: sortByOrder(galleryPhotos.data ?? []) as MemorialContext['galleryPhotos'],
-    tributes: (tributes.data ?? []) as Tribute[],
-    stories: (stories.data ?? []) as Story[],
-    mediaItems: sortByOrder(mediaItems.data ?? []) as MemorialContext['mediaItems'],
-    donationCauses: sortByOrder(donationCauses.data ?? []) as MemorialContext['donationCauses'],
-    familyContacts: (familyContacts.data ?? []) as MemorialContext['familyContacts'],
-    aiSettings: (aiSettingsList.data?.[0] ?? demoContext.aiSettings) as MemorialContext['aiSettings'],
-    aiQuickQuestions: sortByOrder(aiQuickQuestions.data ?? []) as MemorialContext['aiQuickQuestions'],
-    aiKnowledgeEntries: (aiKnowledgeEntries.data ?? []) as MemorialContext['aiKnowledgeEntries'],
+    biographySections: sortByOrder(biographySections as MemorialContext['biographySections']),
+    timelineEvents: sortByOrder(timelineEvents as MemorialContext['timelineEvents']),
+    familyMembers: sortByOrder(familyMembers as MemorialContext['familyMembers']),
+    funeralEvents: sortByStart(funeralEvents as MemorialContext['funeralEvents']),
+    programItems: sortByOrder(programItems as MemorialContext['programItems']),
+    galleryAlbums: sortByOrder(galleryAlbums as MemorialContext['galleryAlbums']),
+    galleryPhotos: sortByOrder(galleryPhotos as MemorialContext['galleryPhotos']),
+    tributes: tributes as Tribute[],
+    stories: stories as Story[],
+    mediaItems: sortByOrder(mediaItems as MemorialContext['mediaItems']),
+    donationCauses: sortByOrder(donationCauses as MemorialContext['donationCauses']),
+    familyContacts: familyContacts as MemorialContext['familyContacts'],
+    aiSettings: ((aiSettingsList[0] as MemorialContext['aiSettings'] | undefined) ?? demoContext.aiSettings),
+    aiQuickQuestions: sortByOrder(aiQuickQuestions as MemorialContext['aiQuickQuestions']),
+    aiKnowledgeEntries: aiKnowledgeEntries as MemorialContext['aiKnowledgeEntries'],
   };
 }
 
@@ -121,7 +145,7 @@ export async function submitTribute(input: {
   photoUrl?: string;
   isGuestbookSignature?: boolean;
 }): Promise<Tribute> {
-  const client = getClient();
+  const client = getPublicClient();
   const tribute: Tribute = {
     id: `tr-${Date.now()}`,
     memorialId: MEMORIAL_ID,
@@ -153,7 +177,7 @@ export async function submitStory(input: {
   body: string;
   mediaUrl?: string;
 }): Promise<Story> {
-  const client = getClient();
+  const client = getPublicClient();
   const story: Story = {
     id: `st-${Date.now()}`,
     memorialId: MEMORIAL_ID,
@@ -175,7 +199,7 @@ export async function submitStory(input: {
 }
 
 export async function getAdminContext(): Promise<MemorialContext & { pendingTributes: Tribute[]; pendingStories: Story[] }> {
-  const client = getClient();
+  const client = getAdminClient() ?? getPublicClient();
   if (!client) {
     return {
       ...demoContext,
@@ -206,7 +230,7 @@ export async function getAdminContext(): Promise<MemorialContext & { pendingTrib
 }
 
 export async function updateTributeStatus(id: string, status: ContentStatus) {
-  const client = getClient();
+  const client = getAdminClient();
   if (!client) {
     localTributes = localTributes.map((t) => (t.id === id ? { ...t, status } : t));
     return;
@@ -215,7 +239,7 @@ export async function updateTributeStatus(id: string, status: ContentStatus) {
 }
 
 export async function updateStoryStatus(id: string, status: ContentStatus) {
-  const client = getClient();
+  const client = getAdminClient();
   if (!client) {
     localStories = localStories.map((s) => (s.id === id ? { ...s, status } : s));
     return;
@@ -224,7 +248,7 @@ export async function updateStoryStatus(id: string, status: ContentStatus) {
 }
 
 export async function updateMemorial(id: string, updates: Partial<Memorial>) {
-  const client = getClient();
+  const client = getAdminClient();
   if (!client) {
     Object.assign(demoContext.memorial, updates);
     return;

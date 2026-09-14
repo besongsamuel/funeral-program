@@ -11,7 +11,7 @@ export function GalleryPage() {
   const [lightboxIndex, setLightboxIndex] = useState(-1);
   const reduced = useReducedMotion();
 
-  if (isLoading || !data) return null;
+  if (isLoading && !data) return null;
 
   const { galleryAlbums, galleryPhotos } = data;
   const filtered = activeAlbum
