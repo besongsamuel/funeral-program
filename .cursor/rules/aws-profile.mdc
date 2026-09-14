@@ -1,0 +1,12 @@
+---
+description: Use the aftermath AWS profile for all AWS and Amplify deployments
+alwaysApply: true
+---
+
+# AWS profile
+
+Use the AWS named profile `aftermath` for any AWS CLI, Amplify Gen 2, sandbox, or hosting deployment in this project.
+
+- Prefer `AWS_PROFILE=aftermath` and `--profile aftermath`
+- Do not use the default AWS profile
+- The `yarn sandbox` script already sets this profile
