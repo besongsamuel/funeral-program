@@ -59,11 +59,15 @@ VITE_ASSISTANT_URL=https://your-function-url.lambda-url.region.on.aws/
 
 ### Amplify Hosting
 
-1. Connect this repo to **Amplify Hosting**
-2. Build command: `yarn build`
-3. Output directory: `dist`
-4. Node version: 18+
-5. Amplify Gen 2 CI/CD will inject `amplify_outputs.json` at build time
+Frontend hosting is connected to the `main` branch of this repo. Each push to `main` builds the Vite app and publishes it to Amplify Hosting.
+
+Build settings live in `amplify.yml`:
+
+- Node.js 22
+- `yarn install --frozen-lockfile`
+- `yarn build`
+- Artifact directory: `dist`
+- SPA routes rewrite to `index.html`
 
 ## Project Structure
 
