@@ -1,6 +1,9 @@
 import { Amplify } from 'aws-amplify';
 
 let configured = false;
+let outputs: {
+  custom?: { assistant_url?: string };
+} | null = null;
 
 export async function configureAmplify() {
   if (configured) return true;
@@ -8,11 +11,12 @@ export async function configureAmplify() {
   try {
     const res = await fetch('/amplify_outputs.json');
     if (!res.ok) throw new Error('Not found');
-    const outputs = await res.json();
-    if (!outputs?.auth && !outputs?.data) {
+    const json = await res.json();
+    if (!json?.auth && !json?.data) {
       throw new Error('Empty amplify outputs');
     }
-    Amplify.configure(outputs);
+    outputs = json;
+    Amplify.configure(json);
     configured = true;
     return true;
   } catch {
@@ -23,4 +27,8 @@ export async function configureAmplify() {
 
 export function isAmplifyConfigured() {
   return configured;
+}
+
+export function getAssistantUrl() {
+  return import.meta.env.VITE_ASSISTANT_URL || outputs?.custom?.assistant_url;
 }

@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Sparkles } from 'lucide-react';
 import { useMemorial } from '@/hooks/useMemorial';
+import { getAssistantUrl } from '@/lib/amplify';
+import { answerFromContext } from '@/lib/chat-answer';
 import { getFirstName } from '@/lib/utils';
 
 interface ChatMessage {
@@ -68,43 +70,7 @@ function renderInlineMarkdown(text: string): ReactNode[] {
 
 function localAnswer(question: string, ctx: ReturnType<typeof useMemorial>['data']): string {
   if (!ctx) return 'Please try again in a moment.';
-  const q = question.toLowerCase();
-  const { memorial, funeralEvents, biographySections, donationCauses, aiKnowledgeEntries } = ctx;
-
-  if (q.includes('service') || q.includes('funeral') || q.includes('when') || q.includes('where') || q.includes('programme') || q.includes('program')) {
-    const service = funeralEvents.find((e) => e.kind === 'service');
-    if (service) {
-      const when = service.timeLabel
-        ? `${new Date(service.startsAt).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} at ${service.timeLabel}`
-        : new Date(service.startsAt).toLocaleString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
-      return `The Funeral and Thanksgiving Programme runs from 7 to 19 November 2026.\n\nThe funeral service will be held at **${service.venueName}** on ${when}.\n\nAddress: ${service.address ?? 'See funeral page for details'}\n\nBurial follows at the family compound in Limbola. [View the full programme](/funeral)`;
-    }
-  }
-  if (q.includes('contact') || q.includes('phone') || q.includes('reach')) {
-    return 'Family contacts are listed by country on the Funeral page, including Cameroon, Germany, the USA, and Canada.\n\n[View family contacts](/funeral)';
-  }
-  if (q.includes('born') || q.includes('childhood')) {
-    const childhood = biographySections.find((b) => b.kind === 'childhood');
-    return childhood ? `${childhood.body}\n\n[Read more about her life](/legacy)` : `She was born on ${memorial.bornOn}. [Learn more](/legacy)`;
-  }
-  if (q.includes('legacy') || q.includes('accomplish')) {
-    const acc = biographySections.find((b) => b.kind === 'accomplishments');
-    return acc ? `${acc.body}\n\n[Explore her legacy](/legacy)` : memorial.shortTribute ?? 'A remarkable life. [Learn more](/legacy)';
-  }
-  if (q.includes('donat') || q.includes('flowers')) {
-    const cause = donationCauses[0];
-    return cause ? `${cause.inLieuOfFlowersNote ?? cause.description}\n\n[Make a donation](/donations)` : 'Please see the donations page.';
-  }
-  if (q.includes('memory') || q.includes('tribute') || q.includes('condolence') || q.includes('share')) {
-    return 'You can share a memory or condolence on the Tributes page. Your message will be reviewed by the family before appearing publicly.\n\n[Share a memory](/tributes)';
-  }
-
-  const knowledge = aiKnowledgeEntries.find((k) =>
-    k.question.toLowerCase().includes(q.split(' ').find((w) => w.length > 4) ?? '') ?? false,
-  );
-  if (knowledge) return knowledge.answer;
-
-  return ctx.aiSettings.fallbackMessage ?? "I'm sorry, I don't have that information. Please contact the family on the Funeral page.";
+  return answerFromContext(question, ctx);
 }
 
 export function MemorialChat() {
@@ -133,7 +99,7 @@ export function MemorialChat() {
     setLoading(true);
 
     try {
-      const assistantUrl = import.meta.env.VITE_ASSISTANT_URL;
+      const assistantUrl = getAssistantUrl();
       let reply: string;
 
       if (assistantUrl) {
@@ -208,17 +174,6 @@ export function MemorialChat() {
               {messages.length === 0 && (
                 <div className="text-center">
                   <p className="text-sm text-gray-600">{data.aiSettings.greeting}</p>
-                  <div className="mt-4 flex flex-wrap justify-center gap-2">
-                    {data.aiQuickQuestions.map((q) => (
-                      <button
-                        key={q.id}
-                        onClick={() => sendMessage(q.questionText)}
-                        className="rounded-full border border-memorial-200 bg-memorial-50 px-3 py-1.5 text-xs text-memorial-700 hover:bg-memorial-100"
-                      >
-                        {q.label}
-                      </button>
-                    ))}
-                  </div>
                 </div>
               )}
 
@@ -257,6 +212,21 @@ export function MemorialChat() {
             </div>
 
             <div className="border-t border-memorial-100 p-3">
+              {data.aiQuickQuestions.length > 0 && (
+                <div className="mb-3 flex max-h-24 flex-wrap gap-2 overflow-y-auto">
+                  {data.aiQuickQuestions.map((q) => (
+                    <button
+                      key={q.id}
+                      type="button"
+                      onClick={() => sendMessage(q.questionText)}
+                      disabled={loading}
+                      className="rounded-full border border-memorial-200 bg-memorial-50 px-3 py-1.5 text-xs text-memorial-700 hover:bg-memorial-100 disabled:opacity-50"
+                    >
+                      {q.label}
+                    </button>
+                  ))}
+                </div>
+              )}
               <form
                 onSubmit={(e) => {
                   e.preventDefault();

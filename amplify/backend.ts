@@ -1,5 +1,6 @@
 import { defineBackend } from '@aws-amplify/backend';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { FunctionUrlAuthType, HttpMethod } from 'aws-cdk-lib/aws-lambda';
 import { auth } from './auth/resource';
 import { data } from './data/resource';
 import { storage } from './storage/resource';
@@ -14,6 +15,8 @@ const backend = defineBackend({
   tributeGuard,
 });
 
+const assistantFn = backend.memorialAssistant.resources.lambda;
+
 backend.memorialAssistant.resources.lambda.addToRolePolicy(
   new PolicyStatement({
     actions: ['bedrock:InvokeModel', 'bedrock:InvokeModelWithResponseStream'],
@@ -21,15 +24,44 @@ backend.memorialAssistant.resources.lambda.addToRolePolicy(
   }),
 );
 
-backend.memorialAssistant.resources.lambda.addToRolePolicy(
-  new PolicyStatement({
-    actions: [
-      'dynamodb:GetItem',
-      'dynamodb:Query',
-      'dynamodb:Scan',
-      'dynamodb:PutItem',
-      'dynamodb:UpdateItem',
-    ],
-    resources: ['*'],
-  }),
-);
+const assistantTables = [
+  'Memorial',
+  'BiographySection',
+  'TimelineEvent',
+  'FamilyMember',
+  'FuneralEvent',
+  'ProgramItem',
+  'Tribute',
+  'Story',
+  'MediaItem',
+  'DonationCause',
+  'FamilyContact',
+  'AiSettings',
+  'AiKnowledgeEntry',
+] as const;
+
+for (const model of assistantTables) {
+  const table = backend.data.resources.tables[model];
+  assistantFn.addEnvironment(`TABLE_${model}`, table.tableName);
+  assistantFn.addToRolePolicy(
+    new PolicyStatement({
+      actions: ['dynamodb:GetItem', 'dynamodb:Query'],
+      resources: [table.tableArn, `${table.tableArn}/index/*`],
+    }),
+  );
+}
+
+const assistantUrl = assistantFn.addFunctionUrl({
+  authType: FunctionUrlAuthType.NONE,
+  cors: {
+    allowedOrigins: ['*'],
+    allowedMethods: [HttpMethod.POST],
+    allowedHeaders: ['content-type'],
+  },
+});
+
+backend.addOutput({
+  custom: {
+    assistant_url: assistantUrl.url,
+  },
+});
