@@ -10,8 +10,10 @@ import {
 } from '@/lib/data-service';
 import type { ContentStatus } from '@/lib/types';
 import { demoContext } from '@/lib/demo-data';
+import { exportSubmissionsCsv } from '@/lib/export-submissions-csv';
 import { AdminContent } from './AdminContent';
 import { AdminAi, AdminProfile } from './AdminSettings';
+import { Download } from 'lucide-react';
 
 type Tab = 'profile' | 'content' | 'moderation' | 'ai' | 'publish';
 type ModeratedType = 'tribute' | 'story';
@@ -47,10 +49,15 @@ export function AdminDashboard() {
     await refresh();
   };
 
+  const handleExportCsv = () => {
+    exportSubmissionsCsv(data.tributes, data.stories, data.memorial.slug);
+  };
+
   const approvedTributes = data.tributes.filter((t) => t.status === 'approved');
   const approvedStories = data.stories.filter((s) => s.status === 'approved');
   const rejectedTributes = data.tributes.filter((t) => t.status === 'rejected');
   const rejectedStories = data.stories.filter((s) => s.status === 'rejected');
+  const submissionCount = data.tributes.length + data.stories.length;
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'profile', label: 'Profile' },
@@ -83,8 +90,26 @@ export function AdminDashboard() {
 
         {tab === 'moderation' && (
           <div className="space-y-10">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="font-serif text-2xl font-semibold">Moderation</h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  {submissionCount} submission{submissionCount === 1 ? '' : 's'} total
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleExportCsv}
+                className="btn-secondary text-sm"
+                disabled={submissionCount === 0}
+              >
+                <Download className="h-4 w-4" />
+                Export CSV
+              </button>
+            </div>
+
             <section className="space-y-6">
-              <h2 className="font-serif text-2xl font-semibold">Moderation Queue</h2>
+              <h3 className="font-serif text-xl font-semibold">Moderation Queue</h3>
               {data.pendingTributes.length === 0 && data.pendingStories.length === 0 && (
                 <p className="text-gray-500">No pending items.</p>
               )}
@@ -116,7 +141,7 @@ export function AdminDashboard() {
             </section>
 
             <section className="space-y-6">
-              <h2 className="font-serif text-2xl font-semibold">Published</h2>
+              <h3 className="font-serif text-xl font-semibold">Published</h3>
               {approvedTributes.length === 0 && approvedStories.length === 0 && (
                 <p className="text-gray-500">No published tributes or stories.</p>
               )}
@@ -146,7 +171,7 @@ export function AdminDashboard() {
 
             {(rejectedTributes.length > 0 || rejectedStories.length > 0) && (
               <section className="space-y-6">
-                <h2 className="font-serif text-2xl font-semibold">Rejected</h2>
+                <h3 className="font-serif text-xl font-semibold">Rejected</h3>
                 {rejectedTributes.map((t) => (
                   <div key={t.id} className="card opacity-80">
                     <p className="text-sm font-medium text-memorial-700">Tribute from {t.authorName}</p>

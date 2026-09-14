@@ -51,6 +51,7 @@ export function TributesPage() {
 
   if (!data) return null;
 
+  const { memorial } = data;
   const approvedTributes = data.tributes.filter((t) => t.status === 'approved');
   const guestbook = approvedTributes.filter((t) => t.isGuestbookSignature);
   const tributes = approvedTributes.filter((t) => !t.isGuestbookSignature);
@@ -85,8 +86,25 @@ export function TributesPage() {
     <div>
       <section className="page-banner">
         <div className="container-memorial px-4 text-center">
-          <h1 className="font-serif text-4xl font-bold">Tributes & Condolences</h1>
-          <p className="mt-3 text-memorial-200">Share your memories and messages</p>
+          <p className="type-intro-on-dark mb-3 text-xs sm:text-sm">In loving memory of</p>
+          <h1 className="type-name-on-dark text-3xl sm:text-4xl">{memorial.fullName}</h1>
+          {memorial.maidenName && (
+            <p className="type-maiden-on-dark mt-1 text-lg">née {memorial.maidenName}</p>
+          )}
+          <p className="mt-4 font-serif text-xl text-white/90">Tributes &amp; Condolences</p>
+          <p className="mt-2 text-memorial-200">Share your memories and messages</p>
+        </div>
+      </section>
+
+      <section className="section-padding pb-0">
+        <div className="container-memorial px-4">
+          <figure className="scripture-panel">
+            <p>
+              “Blessed are the dead who die in the Lord from now on. ‘Yes,’ says the Spirit,
+              ‘that they may rest from their labor, and their works follow them.’”
+            </p>
+            <cite>Revelation 14:13</cite>
+          </figure>
         </div>
       </section>
 
@@ -123,6 +141,9 @@ export function TributesPage() {
                 <h3 className="flex items-center gap-2 font-serif text-xl font-semibold text-memorial-900">
                   <BookOpen className="h-5 w-5" /> Share a Story
                 </h3>
+                <p className="text-sm text-memorial-700">
+                  A memory of {memorial.fullName}
+                </p>
                 <div>
                   <label className="label">Your Name</label>
                   <input {...storyForm.register('authorName', { required: true })} className="input-field" />
@@ -139,9 +160,11 @@ export function TributesPage() {
               </form>
             ) : (
               <form onSubmit={tributeForm.handleSubmit(onTributeSubmit)} className="card space-y-4">
-                <h3 className="flex items-center gap-2 font-serif text-xl font-semibold text-memorial-900">
-                  <Heart className="h-5 w-5" />
-                  {tab === 'guestbook' ? 'Sign the Guestbook' : 'Leave a Tribute'}
+                <h3 className="flex items-center justify-center gap-2 text-center font-serif text-xl font-semibold text-memorial-900 sm:justify-start sm:text-left">
+                  <Heart className="h-5 w-5 shrink-0" />
+                  {tab === 'guestbook'
+                    ? `Sign the Guestbook for ${memorial.fullName}`
+                    : `Leave a Tribute for ${memorial.fullName}`}
                 </h3>
                 <div>
                   <label className="label">Your Name</label>
@@ -192,7 +215,7 @@ export function TributesPage() {
 
       <section className="section-padding bg-memorial-50">
         <div className="container-memorial">
-          <SectionHeading title="Messages" />
+          <SectionHeading title="Messages" subtitle={`Shared in honour of ${memorial.fullName}`} />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[...tributes, ...guestbook].map((t, i) => (
               <motion.div
