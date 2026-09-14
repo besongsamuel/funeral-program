@@ -5,10 +5,10 @@ import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { Music } from 'lucide-react';
 
 export function MemoriesPage() {
-  const { data, isLoading } = useMemorial();
+  const { data } = useMemorial();
   const reduced = useReducedMotion();
 
-  if (isLoading && !data) return null;
+  if (!data) return null;
 
   const videos = data.mediaItems.filter((m) => m.kind === 'video');
   const music = data.mediaItems.filter((m) => m.kind === 'audio');

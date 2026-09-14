@@ -1,17 +1,32 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { isAmplifyConfigured } from '@/lib/amplify';
-import { formatDate } from '@/lib/utils';
-import type { MemorialContext } from '@/lib/types';
+import { adminRemove, adminSave, isDraftId, newDraftId } from '@/lib/admin-api';
+import type {
+  BiographySection,
+  DonationCause,
+  FamilyContact,
+  FamilyMember,
+  FuneralEvent,
+  GalleryAlbum,
+  GalleryPhoto,
+  MediaItem,
+  MemorialContext,
+  ProgramItem,
+  TimelineEvent,
+} from '@/lib/types';
+import {
+  Field,
+  SaveBar,
+  SelectInput,
+  TextArea,
+  TextInput,
+  fromDateTimeLocal,
+  toDateTimeLocal,
+  useRecordForm,
+} from './form-controls';
 
-type Section =
-  | 'biography'
-  | 'timeline'
-  | 'family'
-  | 'funeral'
-  | 'gallery'
-  | 'media'
-  | 'donations';
+type Section = 'biography' | 'timeline' | 'family' | 'funeral' | 'gallery' | 'media' | 'donations';
 
 const sections: { id: Section; label: string; publicPath: string }[] = [
   { id: 'biography', label: 'Biography', publicPath: '/legacy' },
@@ -23,21 +38,41 @@ const sections: { id: Section; label: string; publicPath: string }[] = [
   { id: 'donations', label: 'Donations', publicPath: '/donations' },
 ];
 
-const kindLabels: Record<string, string> = {
-  service: 'Service',
-  visitation: 'Visitation',
-  reception: 'Reception',
-  burial: 'Burial',
-};
+const BIO_KINDS = ['childhood', 'education', 'faith', 'accomplishments', 'qualities', 'quotes', 'career'];
+const FUNERAL_KINDS = ['service', 'visitation', 'reception', 'burial'] as const;
+const PROGRAM_KINDS = ['hymn', 'scripture', 'speaker', 'eulogy', 'prayer', 'music'];
+const ALBUM_CATEGORIES = ['childhood', 'family', 'friends', 'career', 'community', 'special', 'funeral'];
+const MEDIA_KINDS = ['video', 'audio', 'livestream'] as const;
+const MEDIA_PROVIDERS = ['youtube', 'vimeo', 'upload'];
 
-function Empty({ children }: { children: string }) {
-  return <p className="rounded-xl border border-dashed border-memorial-200 bg-memorial-50 px-4 py-6 text-sm text-gray-600">{children}</p>;
+function AddButton({ onClick, children }: { onClick: () => void; children: string }) {
+  return (
+    <button type="button" onClick={onClick} className="btn-secondary text-xs">
+      {children}
+    </button>
+  );
 }
 
-export function AdminContent({ data }: { data: MemorialContext }) {
+export function AdminContent({ data, onChanged }: { data: MemorialContext; onChanged: () => Promise<void> | void }) {
   const [section, setSection] = useState<Section>('biography');
+  const [bioDrafts, setBioDrafts] = useState<BiographySection[]>([]);
+  const [timelineDrafts, setTimelineDrafts] = useState<TimelineEvent[]>([]);
+  const [memberDrafts, setMemberDrafts] = useState<FamilyMember[]>([]);
+  const [contactDrafts, setContactDrafts] = useState<FamilyContact[]>([]);
+  const [funeralDrafts, setFuneralDrafts] = useState<FuneralEvent[]>([]);
+  const [programDrafts, setProgramDrafts] = useState<ProgramItem[]>([]);
+  const [albumDrafts, setAlbumDrafts] = useState<GalleryAlbum[]>([]);
+  const [photoDrafts, setPhotoDrafts] = useState<GalleryPhoto[]>([]);
+  const [mediaDrafts, setMediaDrafts] = useState<MediaItem[]>([]);
+  const [donationDrafts, setDonationDrafts] = useState<DonationCause[]>([]);
   const connected = isAmplifyConfigured();
-  const current = sections.find((s) => s.id === section)!;
+  const current = sections.find((item) => item.id === section)!;
+  const memorialId = data.memorial.id;
+
+  const refresh = async (drop?: () => void) => {
+    drop?.();
+    await onChanged();
+  };
 
   return (
     <div className="space-y-6">
@@ -45,9 +80,8 @@ export function AdminContent({ data }: { data: MemorialContext }) {
         <div>
           <h2 className="font-serif text-2xl font-semibold">Site content</h2>
           <p className="mt-1 text-sm text-gray-600">
-            Records loaded from {connected ? 'Amplify Data' : 'local demo data'} for{' '}
-            <span className="font-medium text-memorial-800">{data.memorial.fullName}</span>
-            {' '}({data.memorial.slug}).
+            Edit records in {connected ? 'Amplify Data' : 'local demo data'} for{' '}
+            <span className="font-medium text-memorial-800">{data.memorial.fullName}</span>.
           </p>
         </div>
         <span
@@ -60,20 +94,20 @@ export function AdminContent({ data }: { data: MemorialContext }) {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {sections.map((s) => (
+        {sections.map((item) => (
           <button
-            key={s.id}
-            onClick={() => setSection(s.id)}
+            key={item.id}
+            onClick={() => setSection(item.id)}
             className={`rounded-full px-4 py-1.5 text-sm font-medium ${
-              section === s.id ? 'bg-memorial-700 text-white' : 'bg-memorial-50 text-memorial-800 hover:bg-memorial-100'
+              section === item.id ? 'bg-memorial-700 text-white' : 'bg-memorial-50 text-memorial-800 hover:bg-memorial-100'
             }`}
           >
-            {s.label}
+            {item.label}
           </button>
         ))}
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-3">
         <h3 className="font-serif text-xl font-semibold">{current.label}</h3>
         <Link to={current.publicPath} className="text-sm text-memorial-700 underline hover:text-memorial-900">
           View on site
@@ -82,154 +116,666 @@ export function AdminContent({ data }: { data: MemorialContext }) {
 
       {section === 'biography' && (
         <div className="space-y-3">
-          {data.biographySections.length === 0 && <Empty>No biography sections in Amplify Data yet.</Empty>}
-          {data.biographySections.map((item) => (
-            <article key={item.id} className="card space-y-2">
-              <p className="text-xs uppercase tracking-wide text-memorial-600">{item.kind}</p>
-              <h4 className="font-serif text-lg font-semibold text-memorial-900">{item.heading}</h4>
-              <p className="whitespace-pre-wrap text-sm leading-relaxed text-gray-700">{item.body}</p>
-            </article>
+          {[...data.biographySections, ...bioDrafts].map((item) => (
+            <BiographyForm
+              key={item.id}
+              item={item}
+              onChanged={() => refresh(() => setBioDrafts((items) => items.filter((row) => row.id !== item.id)))}
+            />
           ))}
+          <AddButton
+            onClick={() =>
+              setBioDrafts((items) => [
+                ...items,
+                {
+                  id: newDraftId(),
+                  memorialId,
+                  kind: 'qualities',
+                  heading: '',
+                  body: '',
+                  sortOrder: data.biographySections.length + items.length + 1,
+                },
+              ])
+            }
+          >
+            Add biography section
+          </AddButton>
         </div>
       )}
 
       {section === 'timeline' && (
         <div className="space-y-3">
-          {data.timelineEvents.length === 0 && <Empty>No timeline events in Amplify Data yet.</Empty>}
-          {data.timelineEvents.map((item) => (
-            <article key={item.id} className="card">
-              <p className="text-xs font-medium text-memorial-600">{formatDate(item.eventDate)}</p>
-              <h4 className="mt-1 font-serif text-lg font-semibold text-memorial-900">{item.title}</h4>
-              {item.description && <p className="mt-2 text-sm text-gray-600">{item.description}</p>}
-            </article>
+          {[...data.timelineEvents, ...timelineDrafts].map((item) => (
+            <TimelineForm
+              key={item.id}
+              item={item}
+              onChanged={() => refresh(() => setTimelineDrafts((items) => items.filter((row) => row.id !== item.id)))}
+            />
           ))}
+          <AddButton
+            onClick={() =>
+              setTimelineDrafts((items) => [
+                ...items,
+                {
+                  id: newDraftId(),
+                  memorialId,
+                  eventDate: '',
+                  title: '',
+                  description: '',
+                  sortOrder: data.timelineEvents.length + items.length + 1,
+                },
+              ])
+            }
+          >
+            Add timeline event
+          </AddButton>
         </div>
       )}
 
       {section === 'family' && (
         <div className="grid gap-8 lg:grid-cols-2">
           <div className="space-y-3">
-            <h4 className="text-sm font-medium text-gray-500">Family members ({data.familyMembers.length})</h4>
-            {data.familyMembers.length === 0 && <Empty>No family members in Amplify Data yet.</Empty>}
-            {data.familyMembers.map((member) => (
-              <article key={member.id} className="card text-sm">
-                <p className="font-medium text-memorial-900">{member.fullName}</p>
-                <p className="text-gray-600">{member.relation}</p>
-                {member.bio && <p className="mt-2 text-gray-600">{member.bio}</p>}
-              </article>
+            <h4 className="text-sm font-medium text-gray-500">Family members</h4>
+            {[...data.familyMembers, ...memberDrafts].map((item) => (
+              <MemberForm
+                key={item.id}
+                item={item}
+                onChanged={() => refresh(() => setMemberDrafts((items) => items.filter((row) => row.id !== item.id)))}
+              />
             ))}
+            <AddButton
+              onClick={() =>
+                setMemberDrafts((items) => [
+                  ...items,
+                  {
+                    id: newDraftId(),
+                    memorialId,
+                    fullName: '',
+                    relation: '',
+                    bio: '',
+                    sortOrder: data.familyMembers.length + items.length + 1,
+                  },
+                ])
+              }
+            >
+              Add family member
+            </AddButton>
           </div>
           <div className="space-y-3">
-            <h4 className="text-sm font-medium text-gray-500">Contacts ({data.familyContacts.length})</h4>
-            {data.familyContacts.length === 0 && <Empty>No family contacts in Amplify Data yet.</Empty>}
-            {data.familyContacts.map((contact) => (
-              <article key={contact.id} className="card text-sm">
-                <p className="font-medium text-memorial-900">{contact.name}</p>
-                <p className="text-gray-600">{contact.relation}</p>
-                {contact.phone && <p className="mt-1 text-gray-700">{contact.phone}</p>}
-                {contact.email && <p className="text-gray-700">{contact.email}</p>}
-              </article>
+            <h4 className="text-sm font-medium text-gray-500">Contacts</h4>
+            {[...data.familyContacts, ...contactDrafts].map((item) => (
+              <ContactForm
+                key={item.id}
+                item={item}
+                onChanged={() => refresh(() => setContactDrafts((items) => items.filter((row) => row.id !== item.id)))}
+              />
             ))}
+            <AddButton
+              onClick={() =>
+                setContactDrafts((items) => [
+                  ...items,
+                  { id: newDraftId(), memorialId, name: '', relation: '', phone: '', email: '' },
+                ])
+              }
+            >
+              Add contact
+            </AddButton>
           </div>
         </div>
       )}
 
       {section === 'funeral' && (
-        <div className="space-y-3">
-          {data.funeralEvents.length === 0 && <Empty>No funeral events in Amplify Data yet.</Empty>}
-          {data.funeralEvents.map((event) => (
-            <article key={event.id} className="card space-y-1">
-              <p className="text-xs uppercase tracking-wide text-memorial-600">
-                {kindLabels[event.kind] ?? event.kind}
-              </p>
-              <h4 className="font-serif text-lg font-semibold text-memorial-900">
-                {event.title ?? kindLabels[event.kind] ?? event.kind}
-              </h4>
-              <p className="text-sm text-gray-700">{event.timeLabel ?? formatDate(event.startsAt)}</p>
-              <p className="text-sm text-gray-600">
-                {event.venueName}
-                {event.address ? ` — ${event.address}` : ''}
-              </p>
-              {event.notes && <p className="pt-2 text-sm text-gray-600">{event.notes}</p>}
-            </article>
-          ))}
-          {data.programItems.length > 0 && (
-            <div className="pt-4">
-              <h4 className="mb-3 text-sm font-medium text-gray-500">Program items</h4>
-              {data.programItems.map((item) => (
-                <article key={item.id} className="card mb-2 text-sm">
-                  <p className="font-medium text-memorial-900">{item.title}</p>
-                  <p className="text-gray-600">
-                    {[item.kind, item.person, item.reference].filter(Boolean).join(' · ')}
-                  </p>
-                </article>
-              ))}
-            </div>
-          )}
+        <div className="space-y-6">
+          <div className="space-y-3">
+            {[...data.funeralEvents, ...funeralDrafts].map((item) => (
+              <FuneralForm
+                key={item.id}
+                item={item}
+                onChanged={() => refresh(() => setFuneralDrafts((items) => items.filter((row) => row.id !== item.id)))}
+              />
+            ))}
+            <AddButton
+              onClick={() =>
+                setFuneralDrafts((items) => [
+                  ...items,
+                  {
+                    id: newDraftId(),
+                    memorialId,
+                    kind: 'visitation',
+                    title: '',
+                    startsAt: '',
+                    timeLabel: '',
+                    venueName: '',
+                    address: '',
+                    notes: '',
+                  },
+                ])
+              }
+            >
+              Add funeral event
+            </AddButton>
+          </div>
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium text-gray-500">Program items</h4>
+            {[...data.programItems, ...programDrafts].map((item) => (
+              <ProgramForm
+                key={item.id}
+                item={item}
+                onChanged={() => refresh(() => setProgramDrafts((items) => items.filter((row) => row.id !== item.id)))}
+              />
+            ))}
+            <AddButton
+              onClick={() =>
+                setProgramDrafts((items) => [
+                  ...items,
+                  {
+                    id: newDraftId(),
+                    memorialId,
+                    kind: 'speaker',
+                    title: '',
+                    person: '',
+                    reference: '',
+                    sortOrder: data.programItems.length + items.length + 1,
+                  },
+                ])
+              }
+            >
+              Add program item
+            </AddButton>
+          </div>
         </div>
       )}
 
       {section === 'gallery' && (
         <div className="space-y-6">
-          {data.galleryAlbums.length === 0 && <Empty>No gallery albums in Amplify Data yet.</Empty>}
-          {data.galleryAlbums.map((album) => {
-            const photos = data.galleryPhotos.filter((photo) => photo.albumId === album.id);
-            return (
-              <section key={album.id} className="space-y-3">
-                <h4 className="font-serif text-lg font-semibold text-memorial-900">
-                  {album.name} <span className="text-sm font-normal text-gray-500">({album.category})</span>
-                </h4>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  {photos.map((photo) => (
-                    <figure key={photo.id} className="overflow-hidden rounded-xl border border-memorial-100 bg-white">
-                      <img src={photo.url} alt={photo.caption ?? album.name} className="h-32 w-full object-cover" />
-                      {photo.caption && <figcaption className="p-2 text-xs text-gray-600">{photo.caption}</figcaption>}
-                    </figure>
-                  ))}
+          {[...data.galleryAlbums, ...albumDrafts].map((album) => (
+            <div key={album.id} className="space-y-3">
+              <AlbumForm
+                item={album}
+                onChanged={() => refresh(() => setAlbumDrafts((items) => items.filter((row) => row.id !== album.id)))}
+              />
+              {!isDraftId(album.id) && (
+                <div className="ml-4 space-y-3 border-l border-memorial-100 pl-4">
+                  {data.galleryPhotos
+                    .filter((photo) => photo.albumId === album.id)
+                    .concat(photoDrafts.filter((photo) => photo.albumId === album.id))
+                    .map((photo) => (
+                      <PhotoForm
+                        key={photo.id}
+                        item={photo}
+                        onChanged={() => refresh(() => setPhotoDrafts((items) => items.filter((row) => row.id !== photo.id)))}
+                      />
+                    ))}
+                  <AddButton
+                    onClick={() =>
+                      setPhotoDrafts((items) => [
+                        ...items,
+                        {
+                          id: newDraftId(),
+                          memorialId,
+                          albumId: album.id,
+                          url: '',
+                          caption: '',
+                          sortOrder: data.galleryPhotos.filter((photo) => photo.albumId === album.id).length + 1,
+                        },
+                      ])
+                    }
+                  >
+                    Add photo
+                  </AddButton>
                 </div>
-              </section>
-            );
-          })}
+              )}
+            </div>
+          ))}
+          <AddButton
+            onClick={() =>
+              setAlbumDrafts((items) => [
+                ...items,
+                {
+                  id: newDraftId(),
+                  memorialId,
+                  name: '',
+                  category: 'family',
+                  sortOrder: data.galleryAlbums.length + items.length + 1,
+                },
+              ])
+            }
+          >
+            Add album
+          </AddButton>
         </div>
       )}
 
       {section === 'media' && (
         <div className="space-y-3">
-          {data.mediaItems.length === 0 && (
-            <Empty>No videos, audio, or livestream items in Amplify Data yet.</Empty>
-          )}
-          {data.mediaItems.map((item) => (
-            <article key={item.id} className="card text-sm">
-              <p className="text-xs uppercase tracking-wide text-memorial-600">{item.kind}</p>
-              <h4 className="mt-1 font-medium text-memorial-900">{item.title}</h4>
-              <p className="mt-1 break-all text-gray-600">{item.url}</p>
-            </article>
+          {[...data.mediaItems, ...mediaDrafts].map((item) => (
+            <MediaForm
+              key={item.id}
+              item={item}
+              onChanged={() => refresh(() => setMediaDrafts((items) => items.filter((row) => row.id !== item.id)))}
+            />
           ))}
+          <AddButton
+            onClick={() =>
+              setMediaDrafts((items) => [
+                ...items,
+                {
+                  id: newDraftId(),
+                  memorialId,
+                  kind: 'video',
+                  provider: 'youtube',
+                  url: '',
+                  title: '',
+                  category: '',
+                  sortOrder: data.mediaItems.length + items.length + 1,
+                },
+              ])
+            }
+          >
+            Add media item
+          </AddButton>
         </div>
       )}
 
       {section === 'donations' && (
         <div className="space-y-3">
-          {data.donationCauses.length === 0 && <Empty>No donation causes in Amplify Data yet.</Empty>}
-          {data.donationCauses.map((cause) => (
-            <article key={cause.id} className="card space-y-2">
-              <h4 className="font-serif text-lg font-semibold text-memorial-900">{cause.name}</h4>
-              {cause.description && <p className="text-sm text-gray-700">{cause.description}</p>}
-              {cause.inLieuOfFlowersNote && <p className="text-sm text-gray-600">{cause.inLieuOfFlowersNote}</p>}
-              {cause.donateUrl && (
-                <a href={cause.donateUrl} className="text-sm text-memorial-700 underline" target="_blank" rel="noreferrer">
-                  {cause.donateUrl}
-                </a>
-              )}
-            </article>
+          {[...data.donationCauses, ...donationDrafts].map((item) => (
+            <DonationForm
+              key={item.id}
+              item={item}
+              onChanged={() => refresh(() => setDonationDrafts((items) => items.filter((row) => row.id !== item.id)))}
+            />
           ))}
+          <AddButton
+            onClick={() =>
+              setDonationDrafts((items) => [
+                ...items,
+                {
+                  id: newDraftId(),
+                  memorialId,
+                  name: '',
+                  description: '',
+                  donateUrl: '',
+                  inLieuOfFlowersNote: '',
+                  sortOrder: data.donationCauses.length + items.length + 1,
+                },
+              ])
+            }
+          >
+            Add donation cause
+          </AddButton>
         </div>
       )}
-
-      <p className="text-xs text-gray-500">
-        To change this content, edit <code className="rounded bg-gray-100 px-1">src/lib/demo-data.ts</code> and run{' '}
-        <code className="rounded bg-gray-100 px-1">yarn seed</code>.
-      </p>
     </div>
+  );
+}
+
+function BiographyForm({ item, onChanged }: { item: BiographySection; onChanged: () => Promise<void> | void }) {
+  const form = useRecordForm(item);
+  return (
+    <form className="card space-y-3" onSubmit={(event) => form.submit(event, async (values) => {
+      await adminSave('BiographySection', values);
+      await onChanged();
+    })}>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Kind">
+          <SelectInput value={form.draft.kind} onChange={(e) => form.set('kind', e.target.value)}>
+            {BIO_KINDS.map((kind) => (
+              <option key={kind} value={kind}>{kind}</option>
+            ))}
+          </SelectInput>
+        </Field>
+        <Field label="Order">
+          <TextInput type="number" value={form.draft.sortOrder} onChange={(e) => form.set('sortOrder', Number(e.target.value))} />
+        </Field>
+      </div>
+      <Field label="Heading">
+        <TextInput value={form.draft.heading} onChange={(e) => form.set('heading', e.target.value)} required />
+      </Field>
+      <Field label="Body">
+        <TextArea rows={4} value={form.draft.body} onChange={(e) => form.set('body', e.target.value)} required />
+      </Field>
+      <Field label="Image URL">
+        <TextInput value={form.draft.imageUrl ?? ''} onChange={(e) => form.set('imageUrl', e.target.value)} />
+      </Field>
+      <SaveBar
+        saving={form.saving}
+        message={form.message}
+        isNew={isDraftId(item.id)}
+        onDelete={() => form.remove(async () => {
+          await adminRemove('BiographySection', item.id);
+          await onChanged();
+        })}
+      />
+    </form>
+  );
+}
+
+function TimelineForm({ item, onChanged }: { item: TimelineEvent; onChanged: () => Promise<void> | void }) {
+  const form = useRecordForm(item);
+  return (
+    <form className="card space-y-3" onSubmit={(event) => form.submit(event, async (values) => {
+      await adminSave('TimelineEvent', values);
+      await onChanged();
+    })}>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Date">
+          <TextInput type="date" value={form.draft.eventDate} onChange={(e) => form.set('eventDate', e.target.value)} required />
+        </Field>
+        <Field label="Order">
+          <TextInput type="number" value={form.draft.sortOrder} onChange={(e) => form.set('sortOrder', Number(e.target.value))} />
+        </Field>
+      </div>
+      <Field label="Title">
+        <TextInput value={form.draft.title} onChange={(e) => form.set('title', e.target.value)} required />
+      </Field>
+      <Field label="Description">
+        <TextArea rows={3} value={form.draft.description ?? ''} onChange={(e) => form.set('description', e.target.value)} />
+      </Field>
+      <SaveBar
+        saving={form.saving}
+        message={form.message}
+        isNew={isDraftId(item.id)}
+        onDelete={() => form.remove(async () => {
+          await adminRemove('TimelineEvent', item.id);
+          await onChanged();
+        })}
+      />
+    </form>
+  );
+}
+
+function MemberForm({ item, onChanged }: { item: FamilyMember; onChanged: () => Promise<void> | void }) {
+  const form = useRecordForm(item);
+  return (
+    <form className="card space-y-3" onSubmit={(event) => form.submit(event, async (values) => {
+      await adminSave('FamilyMember', values);
+      await onChanged();
+    })}>
+      <Field label="Full name">
+        <TextInput value={form.draft.fullName} onChange={(e) => form.set('fullName', e.target.value)} required />
+      </Field>
+      <Field label="Relation / region">
+        <TextInput value={form.draft.relation} onChange={(e) => form.set('relation', e.target.value)} required />
+      </Field>
+      <Field label="Bio">
+        <TextArea rows={2} value={form.draft.bio ?? ''} onChange={(e) => form.set('bio', e.target.value)} />
+      </Field>
+      <SaveBar
+        saving={form.saving}
+        message={form.message}
+        isNew={isDraftId(item.id)}
+        onDelete={() => form.remove(async () => {
+          await adminRemove('FamilyMember', item.id);
+          await onChanged();
+        })}
+      />
+    </form>
+  );
+}
+
+function ContactForm({ item, onChanged }: { item: FamilyContact; onChanged: () => Promise<void> | void }) {
+  const form = useRecordForm(item);
+  return (
+    <form className="card space-y-3" onSubmit={(event) => form.submit(event, async (values) => {
+      await adminSave('FamilyContact', values);
+      await onChanged();
+    })}>
+      <Field label="Name">
+        <TextInput value={form.draft.name} onChange={(e) => form.set('name', e.target.value)} required />
+      </Field>
+      <Field label="Relation / region">
+        <TextInput value={form.draft.relation ?? ''} onChange={(e) => form.set('relation', e.target.value)} />
+      </Field>
+      <Field label="Phone">
+        <TextInput value={form.draft.phone ?? ''} onChange={(e) => form.set('phone', e.target.value)} />
+      </Field>
+      <Field label="Email">
+        <TextInput type="email" value={form.draft.email ?? ''} onChange={(e) => form.set('email', e.target.value)} />
+      </Field>
+      <SaveBar
+        saving={form.saving}
+        message={form.message}
+        isNew={isDraftId(item.id)}
+        onDelete={() => form.remove(async () => {
+          await adminRemove('FamilyContact', item.id);
+          await onChanged();
+        })}
+      />
+    </form>
+  );
+}
+
+function FuneralForm({ item, onChanged }: { item: FuneralEvent; onChanged: () => Promise<void> | void }) {
+  const form = useRecordForm({
+    ...item,
+    startsAt: toDateTimeLocal(item.startsAt),
+    endsAt: toDateTimeLocal(item.endsAt),
+  });
+  return (
+    <form className="card space-y-3" onSubmit={(event) => form.submit(event, async (values) => {
+      await adminSave('FuneralEvent', {
+        ...values,
+        startsAt: fromDateTimeLocal(String(values.startsAt)),
+        endsAt: values.endsAt ? fromDateTimeLocal(String(values.endsAt)) : null,
+      });
+      await onChanged();
+    })}>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Kind">
+          <SelectInput value={form.draft.kind} onChange={(e) => form.set('kind', e.target.value)}>
+            {FUNERAL_KINDS.map((kind) => (
+              <option key={kind} value={kind}>{kind}</option>
+            ))}
+          </SelectInput>
+        </Field>
+        <Field label="Time label">
+          <TextInput value={form.draft.timeLabel ?? ''} onChange={(e) => form.set('timeLabel', e.target.value)} />
+        </Field>
+      </div>
+      <Field label="Title">
+        <TextInput value={form.draft.title ?? ''} onChange={(e) => form.set('title', e.target.value)} />
+      </Field>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Starts">
+          <TextInput type="datetime-local" value={form.draft.startsAt} onChange={(e) => form.set('startsAt', e.target.value)} required />
+        </Field>
+        <Field label="Ends">
+          <TextInput type="datetime-local" value={form.draft.endsAt ?? ''} onChange={(e) => form.set('endsAt', e.target.value)} />
+        </Field>
+      </div>
+      <Field label="Venue">
+        <TextInput value={form.draft.venueName} onChange={(e) => form.set('venueName', e.target.value)} required />
+      </Field>
+      <Field label="Address">
+        <TextInput value={form.draft.address ?? ''} onChange={(e) => form.set('address', e.target.value)} />
+      </Field>
+      <Field label="Notes">
+        <TextArea rows={2} value={form.draft.notes ?? ''} onChange={(e) => form.set('notes', e.target.value)} />
+      </Field>
+      <SaveBar
+        saving={form.saving}
+        message={form.message}
+        isNew={isDraftId(item.id)}
+        onDelete={() => form.remove(async () => {
+          await adminRemove('FuneralEvent', item.id);
+          await onChanged();
+        })}
+      />
+    </form>
+  );
+}
+
+function ProgramForm({ item, onChanged }: { item: ProgramItem; onChanged: () => Promise<void> | void }) {
+  const form = useRecordForm(item);
+  return (
+    <form className="card space-y-3" onSubmit={(event) => form.submit(event, async (values) => {
+      await adminSave('ProgramItem', values);
+      await onChanged();
+    })}>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Kind">
+          <SelectInput value={form.draft.kind} onChange={(e) => form.set('kind', e.target.value)}>
+            {PROGRAM_KINDS.map((kind) => (
+              <option key={kind} value={kind}>{kind}</option>
+            ))}
+          </SelectInput>
+        </Field>
+        <Field label="Order">
+          <TextInput type="number" value={form.draft.sortOrder} onChange={(e) => form.set('sortOrder', Number(e.target.value))} />
+        </Field>
+      </div>
+      <Field label="Title">
+        <TextInput value={form.draft.title} onChange={(e) => form.set('title', e.target.value)} required />
+      </Field>
+      <Field label="Person">
+        <TextInput value={form.draft.person ?? ''} onChange={(e) => form.set('person', e.target.value)} />
+      </Field>
+      <Field label="Reference">
+        <TextInput value={form.draft.reference ?? ''} onChange={(e) => form.set('reference', e.target.value)} />
+      </Field>
+      <SaveBar
+        saving={form.saving}
+        message={form.message}
+        isNew={isDraftId(item.id)}
+        onDelete={() => form.remove(async () => {
+          await adminRemove('ProgramItem', item.id);
+          await onChanged();
+        })}
+      />
+    </form>
+  );
+}
+
+function AlbumForm({ item, onChanged }: { item: GalleryAlbum; onChanged: () => Promise<void> | void }) {
+  const form = useRecordForm(item);
+  return (
+    <form className="card space-y-3" onSubmit={(event) => form.submit(event, async (values) => {
+      await adminSave('GalleryAlbum', values);
+      await onChanged();
+    })}>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Name">
+          <TextInput value={form.draft.name} onChange={(e) => form.set('name', e.target.value)} required />
+        </Field>
+        <Field label="Category">
+          <SelectInput value={form.draft.category} onChange={(e) => form.set('category', e.target.value)}>
+            {ALBUM_CATEGORIES.map((category) => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+          </SelectInput>
+        </Field>
+      </div>
+      <SaveBar
+        saving={form.saving}
+        message={form.message}
+        isNew={isDraftId(item.id)}
+        onDelete={() => form.remove(async () => {
+          await adminRemove('GalleryAlbum', item.id);
+          await onChanged();
+        })}
+      />
+    </form>
+  );
+}
+
+function PhotoForm({ item, onChanged }: { item: GalleryPhoto; onChanged: () => Promise<void> | void }) {
+  const form = useRecordForm(item);
+  return (
+    <form className="card space-y-3" onSubmit={(event) => form.submit(event, async (values) => {
+      await adminSave('GalleryPhoto', values);
+      await onChanged();
+    })}>
+      <Field label="Image URL">
+        <TextInput value={form.draft.url} onChange={(e) => form.set('url', e.target.value)} required />
+      </Field>
+      <Field label="Caption">
+        <TextInput value={form.draft.caption ?? ''} onChange={(e) => form.set('caption', e.target.value)} />
+      </Field>
+      {form.draft.url && <img src={form.draft.url} alt="" className="h-24 rounded-lg object-cover" />}
+      <SaveBar
+        saving={form.saving}
+        message={form.message}
+        isNew={isDraftId(item.id)}
+        onDelete={() => form.remove(async () => {
+          await adminRemove('GalleryPhoto', item.id);
+          await onChanged();
+        })}
+      />
+    </form>
+  );
+}
+
+function MediaForm({ item, onChanged }: { item: MediaItem; onChanged: () => Promise<void> | void }) {
+  const form = useRecordForm(item);
+  return (
+    <form className="card space-y-3" onSubmit={(event) => form.submit(event, async (values) => {
+      await adminSave('MediaItem', values);
+      await onChanged();
+    })}>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Kind">
+          <SelectInput value={form.draft.kind} onChange={(e) => form.set('kind', e.target.value)}>
+            {MEDIA_KINDS.map((kind) => (
+              <option key={kind} value={kind}>{kind}</option>
+            ))}
+          </SelectInput>
+        </Field>
+        <Field label="Provider">
+          <SelectInput value={form.draft.provider} onChange={(e) => form.set('provider', e.target.value)}>
+            {MEDIA_PROVIDERS.map((provider) => (
+              <option key={provider} value={provider}>{provider}</option>
+            ))}
+          </SelectInput>
+        </Field>
+      </div>
+      <Field label="Title">
+        <TextInput value={form.draft.title} onChange={(e) => form.set('title', e.target.value)} required />
+      </Field>
+      <Field label="URL">
+        <TextInput value={form.draft.url} onChange={(e) => form.set('url', e.target.value)} required />
+      </Field>
+      <SaveBar
+        saving={form.saving}
+        message={form.message}
+        isNew={isDraftId(item.id)}
+        onDelete={() => form.remove(async () => {
+          await adminRemove('MediaItem', item.id);
+          await onChanged();
+        })}
+      />
+    </form>
+  );
+}
+
+function DonationForm({ item, onChanged }: { item: DonationCause; onChanged: () => Promise<void> | void }) {
+  const form = useRecordForm(item);
+  return (
+    <form className="card space-y-3" onSubmit={(event) => form.submit(event, async (values) => {
+      await adminSave('DonationCause', values);
+      await onChanged();
+    })}>
+      <Field label="Name">
+        <TextInput value={form.draft.name} onChange={(e) => form.set('name', e.target.value)} required />
+      </Field>
+      <Field label="Description">
+        <TextArea rows={3} value={form.draft.description ?? ''} onChange={(e) => form.set('description', e.target.value)} />
+      </Field>
+      <Field label="Donate URL">
+        <TextInput value={form.draft.donateUrl ?? ''} onChange={(e) => form.set('donateUrl', e.target.value)} />
+      </Field>
+      <Field label="In lieu of flowers">
+        <TextArea rows={2} value={form.draft.inLieuOfFlowersNote ?? ''} onChange={(e) => form.set('inLieuOfFlowersNote', e.target.value)} />
+      </Field>
+      <SaveBar
+        saving={form.saving}
+        message={form.message}
+        isNew={isDraftId(item.id)}
+        onDelete={() => form.remove(async () => {
+          await adminRemove('DonationCause', item.id);
+          await onChanged();
+        })}
+      />
+    </form>
   );
 }

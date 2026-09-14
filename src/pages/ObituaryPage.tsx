@@ -3,8 +3,8 @@ import { formatDate } from '@/lib/utils';
 import { Printer } from 'lucide-react';
 
 export function ObituaryPage() {
-  const { data, isLoading } = useMemorial();
-  if (isLoading && !data) return null;
+  const { data } = useMemorial();
+  if (!data) return null;
 
   const { memorial } = data;
 

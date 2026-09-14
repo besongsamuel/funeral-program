@@ -9,6 +9,7 @@ import {
 import type { ContentStatus } from '@/lib/types';
 import { demoContext } from '@/lib/demo-data';
 import { AdminContent } from './AdminContent';
+import { AdminAi, AdminProfile } from './AdminSettings';
 
 type Tab = 'profile' | 'content' | 'moderation' | 'ai' | 'publish';
 
@@ -25,11 +26,15 @@ export function AdminDashboard() {
     return <div className="p-8 text-center">Loading...</div>;
   }
 
+  const refresh = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['admin'] });
+    await queryClient.invalidateQueries({ queryKey: ['memorial'] });
+  };
+
   const handleModerate = async (type: 'tribute' | 'story', id: string, status: ContentStatus) => {
     if (type === 'tribute') await updateTributeStatus(id, status);
     else await updateStoryStatus(id, status);
-    queryClient.invalidateQueries({ queryKey: ['admin'] });
-    queryClient.invalidateQueries({ queryKey: ['memorial'] });
+    await refresh();
   };
 
   const tabs: { id: Tab; label: string }[] = [
@@ -57,30 +62,9 @@ export function AdminDashboard() {
       </nav>
 
       <main className="flex-1 p-8">
-        {tab === 'profile' && (
-          <div className="max-w-2xl space-y-6">
-            <h2 className="font-serif text-2xl font-semibold">Profile & Theme</h2>
-            <div className="card space-y-4">
-              <div>
-                <label className="label">Full Name</label>
-                <input className="input-field" value={data.memorial.fullName} readOnly />
-              </div>
-              <div>
-                <label className="label">Tagline</label>
-                <input className="input-field" value={data.memorial.tagline ?? ''} readOnly />
-              </div>
-              <div>
-                <label className="label">Short Tribute</label>
-                <textarea className="input-field" rows={4} value={data.memorial.shortTribute ?? ''} readOnly />
-              </div>
-              <p className="text-sm text-gray-500">
-                Edit these fields via Amplify sandbox or the seed script. Full inline editing requires Amplify Data connection.
-              </p>
-            </div>
-          </div>
-        )}
+        {tab === 'profile' && <AdminProfile memorial={data.memorial} onChanged={refresh} />}
 
-        {tab === 'content' && <AdminContent data={data} />}
+        {tab === 'content' && <AdminContent data={data} onChanged={refresh} />}
 
         {tab === 'moderation' && (
           <div className="space-y-6">
@@ -112,47 +96,13 @@ export function AdminDashboard() {
         )}
 
         {tab === 'ai' && (
-          <div className="max-w-2xl space-y-6">
-            <h2 className="font-serif text-2xl font-semibold">AI Assistant</h2>
-            <div className="card space-y-4">
-              <div>
-                <label className="label">Assistant Name</label>
-                <input className="input-field" value={data.aiSettings.assistantName} readOnly />
-              </div>
-              <div>
-                <label className="label">Greeting</label>
-                <textarea className="input-field" rows={3} value={data.aiSettings.greeting ?? ''} readOnly />
-              </div>
-              <div>
-                <label className="label">Persona / Tone</label>
-                <textarea className="input-field" rows={3} value={data.aiSettings.persona ?? ''} readOnly />
-              </div>
-              <div className="flex items-center gap-2">
-                <input type="checkbox" checked={data.aiSettings.isEnabled} readOnly />
-                <span className="text-sm">Assistant enabled</span>
-              </div>
-            </div>
-
-            <h3 className="font-serif text-xl font-semibold">Quick Questions</h3>
-            <div className="space-y-2">
-              {data.aiQuickQuestions.map((q) => (
-                <div key={q.id} className="card flex justify-between text-sm">
-                  <span className="font-medium">{q.label}</span>
-                  <span className="text-gray-500">{q.questionText}</span>
-                </div>
-              ))}
-            </div>
-
-            <h3 className="font-serif text-xl font-semibold">Custom Knowledge</h3>
-            <div className="space-y-2">
-              {data.aiKnowledgeEntries.map((k) => (
-                <div key={k.id} className="card text-sm">
-                  <p className="font-medium text-memorial-800">Q: {k.question}</p>
-                  <p className="mt-1 text-gray-600">A: {k.answer}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+          <AdminAi
+            settings={data.aiSettings}
+            questions={data.aiQuickQuestions}
+            knowledge={data.aiKnowledgeEntries}
+            memorialId={data.memorial.id}
+            onChanged={refresh}
+          />
         )}
 
         {tab === 'publish' && (

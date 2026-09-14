@@ -6,12 +6,12 @@ import { useMemorial } from '@/hooks/useMemorial';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export function GalleryPage() {
-  const { data, isLoading } = useMemorial();
+  const { data } = useMemorial();
   const [activeAlbum, setActiveAlbum] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState(-1);
   const reduced = useReducedMotion();
 
-  if (isLoading && !data) return null;
+  if (!data) return null;
 
   const { galleryAlbums, galleryPhotos } = data;
   const filtered = activeAlbum

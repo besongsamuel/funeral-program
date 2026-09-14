@@ -2,8 +2,8 @@ import { useMemorial } from '@/hooks/useMemorial';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 
 export function LivestreamPage() {
-  const { data, isLoading } = useMemorial();
-  if (isLoading && !data) return null;
+  const { data } = useMemorial();
+  if (!data) return null;
 
   const livestream = data.mediaItems.find((m) => m.kind === 'livestream');
 

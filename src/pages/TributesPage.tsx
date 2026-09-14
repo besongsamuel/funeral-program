@@ -22,7 +22,7 @@ interface StoryForm {
 }
 
 export function TributesPage() {
-  const { data, isLoading } = useMemorial();
+  const { data } = useMemorial();
   const [tab, setTab] = useState<'tributes' | 'guestbook' | 'story'>('tributes');
   const [submitted, setSubmitted] = useState(false);
   const queryClient = useQueryClient();
@@ -31,7 +31,7 @@ export function TributesPage() {
   const tributeForm = useForm<TributeForm>({ defaultValues: { isGuestbookSignature: false } });
   const storyForm = useForm<StoryForm>();
 
-  if (isLoading && !data) return null;
+  if (!data) return null;
 
   const approvedTributes = data.tributes.filter((t) => t.status === 'approved');
   const guestbook = approvedTributes.filter((t) => t.isGuestbookSignature);

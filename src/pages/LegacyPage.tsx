@@ -6,10 +6,10 @@ import { formatDate } from '@/lib/utils';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export function LegacyPage() {
-  const { data, isLoading } = useMemorial();
+  const { data } = useMemorial();
   const reduced = useReducedMotion();
 
-  if (isLoading && !data) return null;
+  if (!data) return null;
 
   const { biographySections, timelineEvents } = data;
 

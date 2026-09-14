@@ -58,10 +58,10 @@ function FamilyNode({ member, members, depth = 0 }: { member: FamilyMember; memb
 }
 
 export function FamilyPage() {
-  const { data, isLoading } = useMemorial();
+  const { data } = useMemorial();
   const reduced = useReducedMotion();
 
-  if (isLoading && !data) return null;
+  if (!data) return null;
 
   const { familyMembers } = data;
   const roots = familyMembers.filter((m) => !m.parentId || !familyMembers.find((p) => p.id === m.parentId));

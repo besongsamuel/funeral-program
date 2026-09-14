@@ -87,14 +87,14 @@ async function resolveTables(client: DynamoDBClient) {
 async function putAll(
   doc: DynamoDBDocumentClient,
   table: string,
-  items: Record<string, unknown>[],
+  items: object[],
   now: string,
 ) {
   for (const item of items) {
     await doc.send(
       new PutCommand({
         TableName: table,
-        Item: withTimestamps(item, now),
+        Item: withTimestamps({ ...(item as Record<string, unknown>) }, now),
       }),
     );
   }

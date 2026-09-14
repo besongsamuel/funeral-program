@@ -5,10 +5,10 @@ import { motion } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export function DonationsPage() {
-  const { data, isLoading } = useMemorial();
+  const { data } = useMemorial();
   const reduced = useReducedMotion();
 
-  if (isLoading && !data) return null;
+  if (!data) return null;
 
   const { donationCauses } = data;
 

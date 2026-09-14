@@ -10,7 +10,7 @@ import { usePageMeta } from '@/hooks/usePageMeta';
 import { HeroBackdrop } from '@/components/ui/HeroBackdrop';
 
 export function HomePage() {
-  const { data, isLoading } = useMemorial();
+  const { data } = useMemorial();
   const reduced = useReducedMotion();
 
   usePageMeta(
@@ -18,7 +18,7 @@ export function HomePage() {
     data?.memorial.tagline,
   );
 
-  if (isLoading && !data) {
+  if (!data) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-memorial-200 border-t-memorial-700" />

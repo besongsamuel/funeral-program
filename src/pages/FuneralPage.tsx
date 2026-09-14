@@ -25,8 +25,8 @@ function groupEventsByDay(events: FuneralEvent[]) {
 }
 
 export function FuneralPage() {
-  const { data, isLoading } = useMemorial();
-  if (isLoading && !data) return null;
+  const { data } = useMemorial();
+  if (!data) return null;
 
   const { funeralEvents, programItems, memorial, familyContacts } = data;
   const days = groupEventsByDay(funeralEvents);
