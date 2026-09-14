@@ -212,21 +212,34 @@ export async function getAdminContext(): Promise<MemorialContext & { pendingTrib
 
   const ctx = await getMemorialContext();
   const memorialId = ctx.memorial.id;
-  const [allTributes, allStories] = await Promise.all([
-    client.models.Tribute.list({ filter: { memorialId: { eq: memorialId } } }),
-    client.models.Story.list({ filter: { memorialId: { eq: memorialId } } }),
-  ]);
 
-  const tributes = (allTributes.data ?? []) as Tribute[];
-  const stories = (allStories.data ?? []) as Story[];
+  try {
+    const [allTributes, allStories] = await withTimeout(
+      Promise.all([
+        client.models.Tribute.list({ filter: { memorialId: { eq: memorialId } } }),
+        client.models.Story.list({ filter: { memorialId: { eq: memorialId } } }),
+      ]),
+      8000,
+    );
 
-  return {
-    ...ctx,
-    tributes,
-    stories,
-    pendingTributes: tributes.filter((t) => t.status === 'pending'),
-    pendingStories: stories.filter((s) => s.status === 'pending'),
-  };
+    const tributes = (allTributes.data ?? []) as Tribute[];
+    const stories = (allStories.data ?? []) as Story[];
+
+    return {
+      ...ctx,
+      tributes,
+      stories,
+      pendingTributes: tributes.filter((t) => t.status === 'pending'),
+      pendingStories: stories.filter((s) => s.status === 'pending'),
+    };
+  } catch (error) {
+    console.warn('Admin data request failed — showing public memorial content', error);
+    return {
+      ...ctx,
+      pendingTributes: [],
+      pendingStories: [],
+    };
+  }
 }
 
 export async function updateTributeStatus(id: string, status: ContentStatus) {

@@ -8,8 +8,9 @@ import {
 } from '@/lib/data-service';
 import type { ContentStatus } from '@/lib/types';
 import { demoContext } from '@/lib/demo-data';
+import { AdminContent } from './AdminContent';
 
-type Tab = 'profile' | 'moderation' | 'ai' | 'publish';
+type Tab = 'profile' | 'content' | 'moderation' | 'ai' | 'publish';
 
 export function AdminDashboard() {
   const [tab, setTab] = useState<Tab>('profile');
@@ -33,6 +34,7 @@ export function AdminDashboard() {
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'profile', label: 'Profile' },
+    { id: 'content', label: 'Content' },
     { id: 'moderation', label: 'Moderation' },
     { id: 'ai', label: 'AI Assistant' },
     { id: 'publish', label: 'Publish' },
@@ -52,9 +54,6 @@ export function AdminDashboard() {
             {t.label}
           </button>
         ))}
-        <div className="mt-8 border-t pt-4 text-xs text-gray-500">
-          <p>Content sections (biography, timeline, family, funeral, gallery, media, donations) are managed via Amplify Data when connected.</p>
-        </div>
       </nav>
 
       <main className="flex-1 p-8">
@@ -80,6 +79,8 @@ export function AdminDashboard() {
             </div>
           </div>
         )}
+
+        {tab === 'content' && <AdminContent data={data} />}
 
         {tab === 'moderation' && (
           <div className="space-y-6">
