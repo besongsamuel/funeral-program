@@ -1,5 +1,18 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
 
+const ADMIN_WRITE = ['create', 'read', 'update', 'delete'] as const;
+
+function publicReadAdminWrite(
+  allow: Parameters<Parameters<ReturnType<typeof a.model>['authorization']>[0]>[0],
+) {
+  return [
+    allow.publicApiKey().to(['read']),
+    allow.guest().to(['read']),
+    allow.authenticated().to([...ADMIN_WRITE]),
+    allow.groups(['MemorialAdmin']).to([...ADMIN_WRITE]),
+  ];
+}
+
 const schema = a.schema({
   Memorial: a
     .model({
@@ -18,11 +31,7 @@ const schema = a.schema({
       programPdfUrl: a.string(),
     })
     .secondaryIndexes((index) => [index('slug')])
-    .authorization((allow) => [
-      allow.publicApiKey().to(['read']),
-      allow.guest().to(['read']),
-      allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
-    ]),
+    .authorization((allow) => publicReadAdminWrite(allow)),
 
   BiographySection: a
     .model({
@@ -34,11 +43,7 @@ const schema = a.schema({
       sortOrder: a.integer().default(0),
     })
     .secondaryIndexes((index) => [index('memorialId').sortKeys(['sortOrder'])])
-    .authorization((allow) => [
-      allow.publicApiKey().to(['read']),
-      allow.guest().to(['read']),
-      allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
-    ]),
+    .authorization((allow) => publicReadAdminWrite(allow)),
 
   TimelineEvent: a
     .model({
@@ -50,11 +55,7 @@ const schema = a.schema({
       sortOrder: a.integer().default(0),
     })
     .secondaryIndexes((index) => [index('memorialId').sortKeys(['sortOrder'])])
-    .authorization((allow) => [
-      allow.publicApiKey().to(['read']),
-      allow.guest().to(['read']),
-      allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
-    ]),
+    .authorization((allow) => publicReadAdminWrite(allow)),
 
   FamilyMember: a
     .model({
@@ -67,11 +68,7 @@ const schema = a.schema({
       sortOrder: a.integer().default(0),
     })
     .secondaryIndexes((index) => [index('memorialId').sortKeys(['sortOrder'])])
-    .authorization((allow) => [
-      allow.publicApiKey().to(['read']),
-      allow.guest().to(['read']),
-      allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
-    ]),
+    .authorization((allow) => publicReadAdminWrite(allow)),
 
   FuneralEvent: a
     .model({
@@ -89,11 +86,7 @@ const schema = a.schema({
       notes: a.string(),
     })
     .secondaryIndexes((index) => [index('memorialId')])
-    .authorization((allow) => [
-      allow.publicApiKey().to(['read']),
-      allow.guest().to(['read']),
-      allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
-    ]),
+    .authorization((allow) => publicReadAdminWrite(allow)),
 
   ProgramItem: a
     .model({
@@ -105,11 +98,7 @@ const schema = a.schema({
       sortOrder: a.integer().default(0),
     })
     .secondaryIndexes((index) => [index('memorialId').sortKeys(['sortOrder'])])
-    .authorization((allow) => [
-      allow.publicApiKey().to(['read']),
-      allow.guest().to(['read']),
-      allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
-    ]),
+    .authorization((allow) => publicReadAdminWrite(allow)),
 
   GalleryAlbum: a
     .model({
@@ -119,11 +108,7 @@ const schema = a.schema({
       sortOrder: a.integer().default(0),
     })
     .secondaryIndexes((index) => [index('memorialId').sortKeys(['sortOrder'])])
-    .authorization((allow) => [
-      allow.publicApiKey().to(['read']),
-      allow.guest().to(['read']),
-      allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
-    ]),
+    .authorization((allow) => publicReadAdminWrite(allow)),
 
   GalleryPhoto: a
     .model({
@@ -137,11 +122,7 @@ const schema = a.schema({
       index('memorialId').sortKeys(['sortOrder']),
       index('albumId').sortKeys(['sortOrder']),
     ])
-    .authorization((allow) => [
-      allow.publicApiKey().to(['read']),
-      allow.guest().to(['read']),
-      allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
-    ]),
+    .authorization((allow) => publicReadAdminWrite(allow)),
 
   Tribute: a
     .model({
@@ -159,7 +140,8 @@ const schema = a.schema({
     .authorization((allow) => [
       allow.publicApiKey().to(['read', 'create']),
       allow.guest().to(['read', 'create']),
-      allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
+      allow.authenticated().to([...ADMIN_WRITE]),
+      allow.groups(['MemorialAdmin']).to([...ADMIN_WRITE]),
     ]),
 
   Story: a
@@ -177,7 +159,8 @@ const schema = a.schema({
     .authorization((allow) => [
       allow.publicApiKey().to(['read', 'create']),
       allow.guest().to(['read', 'create']),
-      allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
+      allow.authenticated().to([...ADMIN_WRITE]),
+      allow.groups(['MemorialAdmin']).to([...ADMIN_WRITE]),
     ]),
 
   MediaItem: a
@@ -191,11 +174,7 @@ const schema = a.schema({
       sortOrder: a.integer().default(0),
     })
     .secondaryIndexes((index) => [index('memorialId').sortKeys(['sortOrder'])])
-    .authorization((allow) => [
-      allow.publicApiKey().to(['read']),
-      allow.guest().to(['read']),
-      allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
-    ]),
+    .authorization((allow) => publicReadAdminWrite(allow)),
 
   DonationCause: a
     .model({
@@ -208,11 +187,7 @@ const schema = a.schema({
       sortOrder: a.integer().default(0),
     })
     .secondaryIndexes((index) => [index('memorialId').sortKeys(['sortOrder'])])
-    .authorization((allow) => [
-      allow.publicApiKey().to(['read']),
-      allow.guest().to(['read']),
-      allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
-    ]),
+    .authorization((allow) => publicReadAdminWrite(allow)),
 
   FamilyContact: a
     .model({
@@ -224,11 +199,7 @@ const schema = a.schema({
       note: a.string(),
     })
     .secondaryIndexes((index) => [index('memorialId')])
-    .authorization((allow) => [
-      allow.publicApiKey().to(['read']),
-      allow.guest().to(['read']),
-      allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
-    ]),
+    .authorization((allow) => publicReadAdminWrite(allow)),
 
   AdminUser: a
     .model({
@@ -255,11 +226,7 @@ const schema = a.schema({
       fallbackMessage: a.string(),
     })
     .secondaryIndexes((index) => [index('memorialId')])
-    .authorization((allow) => [
-      allow.publicApiKey().to(['read']),
-      allow.guest().to(['read']),
-      allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
-    ]),
+    .authorization((allow) => publicReadAdminWrite(allow)),
 
   AiQuickQuestion: a
     .model({
@@ -269,11 +236,7 @@ const schema = a.schema({
       sortOrder: a.integer().default(0),
     })
     .secondaryIndexes((index) => [index('memorialId').sortKeys(['sortOrder'])])
-    .authorization((allow) => [
-      allow.publicApiKey().to(['read']),
-      allow.guest().to(['read']),
-      allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
-    ]),
+    .authorization((allow) => publicReadAdminWrite(allow)),
 
   AiKnowledgeEntry: a
     .model({
@@ -283,11 +246,7 @@ const schema = a.schema({
       tags: a.string().array(),
     })
     .secondaryIndexes((index) => [index('memorialId')])
-    .authorization((allow) => [
-      allow.publicApiKey().to(['read']),
-      allow.guest().to(['read']),
-      allow.groups(['MemorialAdmin']).to(['create', 'read', 'update', 'delete']),
-    ]),
+    .authorization((allow) => publicReadAdminWrite(allow)),
 
   AiConversation: a
     .model({

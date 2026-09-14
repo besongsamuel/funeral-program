@@ -216,8 +216,8 @@ export async function getAdminContext(): Promise<MemorialContext & { pendingTrib
   try {
     const [allTributes, allStories] = await withTimeout(
       Promise.all([
-        client.models.Tribute.list({ filter: { memorialId: { eq: memorialId } } }),
-        client.models.Story.list({ filter: { memorialId: { eq: memorialId } } }),
+        client.models.Tribute.list({ filter: { memorialId: { eq: memorialId } }, authMode: 'userPool' }),
+        client.models.Story.list({ filter: { memorialId: { eq: memorialId } }, authMode: 'userPool' }),
       ]),
       8000,
     );
@@ -248,7 +248,7 @@ export async function updateTributeStatus(id: string, status: ContentStatus) {
     localTributes = localTributes.map((t) => (t.id === id ? { ...t, status } : t));
     return;
   }
-  await client.models.Tribute.update({ id, status });
+  await client.models.Tribute.update({ id, status }, { authMode: 'userPool' });
 }
 
 export async function updateStoryStatus(id: string, status: ContentStatus) {
@@ -257,7 +257,7 @@ export async function updateStoryStatus(id: string, status: ContentStatus) {
     localStories = localStories.map((s) => (s.id === id ? { ...s, status } : s));
     return;
   }
-  await client.models.Story.update({ id, status });
+  await client.models.Story.update({ id, status }, { authMode: 'userPool' });
 }
 
 export async function updateMemorial(id: string, updates: Partial<Memorial>) {
@@ -266,7 +266,7 @@ export async function updateMemorial(id: string, updates: Partial<Memorial>) {
     Object.assign(demoContext.memorial, updates);
     return;
   }
-  await client.models.Memorial.update({ id, ...updates });
+  await client.models.Memorial.update({ id, ...updates }, { authMode: 'userPool' });
 }
 
 export { MEMORIAL_ID, MEMORIAL_SLUG, demoContext };

@@ -34,6 +34,7 @@ const LIST_KEYS: Partial<Record<AdminModel, keyof MemorialContext>> = {
   AiKnowledgeEntry: 'aiKnowledgeEntries',
 };
 
+const USER_POOL = { authMode: 'userPool' as const };
 const META_KEYS = new Set(['createdAt', 'updatedAt', '__typename']);
 
 export function isDraftId(id?: string) {
@@ -50,9 +51,15 @@ function getAdminClient() {
     models: Record<
       string,
       {
-        create: (input: object) => Promise<{ data?: unknown; errors?: { message?: string }[] }>;
-        update: (input: object) => Promise<{ data?: unknown; errors?: { message?: string }[] }>;
-        delete: (input: object) => Promise<{ errors?: { message?: string }[] }>;
+        create: (
+          input: object,
+          options?: typeof USER_POOL,
+        ) => Promise<{ data?: unknown; errors?: { message?: string }[] }>;
+        update: (
+          input: object,
+          options?: typeof USER_POOL,
+        ) => Promise<{ data?: unknown; errors?: { message?: string }[] }>;
+        delete: (input: object, options?: typeof USER_POOL) => Promise<{ errors?: { message?: string }[] }>;
       }
     >;
   };
@@ -125,12 +132,12 @@ export async function adminSave(model: AdminModel, input: object) {
   }
 
   if (creating) {
-    const { data, errors } = await client.models[model].create(payload);
+    const { data, errors } = await client.models[model].create(payload, USER_POOL);
     throwIfErrors(errors, 'create');
     return data as Record<string, unknown>;
   }
 
-  const { data, errors } = await client.models[model].update(payload);
+  const { data, errors } = await client.models[model].update(payload, USER_POOL);
   throwIfErrors(errors, 'update');
   return data as Record<string, unknown>;
 }
@@ -142,6 +149,6 @@ export async function adminRemove(model: AdminModel, id: string) {
     mutateLocal(model, 'delete', { id });
     return;
   }
-  const { errors } = await client.models[model].delete({ id });
+  const { errors } = await client.models[model].delete({ id }, USER_POOL);
   throwIfErrors(errors, 'delete');
 }
