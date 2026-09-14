@@ -12,27 +12,49 @@ import type {
 let localTributes: Tribute[] = [...demoContext.tributes];
 let localStories: Story[] = [...demoContext.stories];
 
+function demoMemorial() {
+  return {
+    ...demoContext,
+    tributes: localTributes.filter((t) => t.status === 'approved'),
+    stories: localStories.filter((s) => s.status === 'approved'),
+  };
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getClient(): any {
   if (!isAmplifyConfigured()) return null;
-  return generateClient();
+  return generateClient({ authMode: 'identityPool' });
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number) {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      setTimeout(() => reject(new Error('Memorial data request timed out')), ms);
+    }),
+  ]);
 }
 
 export async function getMemorialContext(slug = MEMORIAL_SLUG): Promise<MemorialContext> {
   const client = getClient();
-  if (!client) {
-    return {
-      ...demoContext,
-      tributes: localTributes.filter((t) => t.status === 'approved'),
-      stories: localStories.filter((s) => s.status === 'approved'),
-    };
-  }
+  if (!client) return demoMemorial();
 
+  try {
+    return await withTimeout(loadFromAmplify(client, slug), 8000);
+  } catch (error) {
+    console.warn('Amplify memorial data unavailable — using local content', error);
+    return demoMemorial();
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function loadFromAmplify(client: any, slug: string): Promise<MemorialContext> {
   const { data: memorials } = await client.models.Memorial.list({
     filter: { slug: { eq: slug } },
+    authMode: 'identityPool',
   });
   const memorial = memorials?.[0];
-  if (!memorial) return demoContext;
+  if (!memorial) return demoMemorial();
 
   const memorialId = memorial.id;
   const [

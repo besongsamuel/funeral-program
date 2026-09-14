@@ -7,6 +7,7 @@ import { Countdown } from '@/components/ui/Countdown';
 import { formatDate } from '@/lib/utils';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { HeroBackdrop } from '@/components/ui/HeroBackdrop';
 
 export function HomePage() {
   const { data, isLoading } = useMemorial();
@@ -17,7 +18,7 @@ export function HomePage() {
     data?.memorial.tagline,
   );
 
-  if (isLoading || !data) {
+  if (isLoading && !data) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-memorial-200 border-t-memorial-700" />
@@ -33,6 +34,7 @@ export function HomePage() {
     <div>
       {/* Hero */}
       <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-memorial-950 via-memorial-900 to-memorial-950">
+        <HeroBackdrop reduced={reduced} />
 
         <div className="relative z-10 container-memorial px-4 py-20 text-center text-white">
           <motion.div
@@ -48,7 +50,7 @@ export function HomePage() {
               <motion.img
                 src={memorial.portraitUrl}
                 alt={memorial.fullName}
-                className="mx-auto mb-8 h-40 w-40 rounded-full border-4 border-white/30 object-cover object-top shadow-2xl sm:h-48 sm:w-48"
+                className="mx-auto mb-8 h-40 w-40 rounded-full border-4 border-amber-100/50 object-cover object-top shadow-[0_0_40px_rgba(253,230,138,0.35)] sm:h-48 sm:w-48"
                 initial={reduced ? false : { scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
