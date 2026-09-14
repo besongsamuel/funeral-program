@@ -4,6 +4,8 @@ import {
   getAdminContext,
   updateTributeStatus,
   updateStoryStatus,
+  deleteTribute,
+  deleteStory,
   updateMemorial,
 } from '@/lib/data-service';
 import type { ContentStatus } from '@/lib/types';
@@ -12,6 +14,7 @@ import { AdminContent } from './AdminContent';
 import { AdminAi, AdminProfile } from './AdminSettings';
 
 type Tab = 'profile' | 'content' | 'moderation' | 'ai' | 'publish';
+type ModeratedType = 'tribute' | 'story';
 
 export function AdminDashboard() {
   const [tab, setTab] = useState<Tab>('profile');
@@ -31,11 +34,23 @@ export function AdminDashboard() {
     await queryClient.invalidateQueries({ queryKey: ['memorial'] });
   };
 
-  const handleModerate = async (type: 'tribute' | 'story', id: string, status: ContentStatus) => {
+  const handleModerate = async (type: ModeratedType, id: string, status: ContentStatus) => {
     if (type === 'tribute') await updateTributeStatus(id, status);
     else await updateStoryStatus(id, status);
     await refresh();
   };
+
+  const handleDelete = async (type: ModeratedType, id: string, label: string) => {
+    if (!confirm(`Delete this ${label}? This cannot be undone.`)) return;
+    if (type === 'tribute') await deleteTribute(id);
+    else await deleteStory(id);
+    await refresh();
+  };
+
+  const approvedTributes = data.tributes.filter((t) => t.status === 'approved');
+  const approvedStories = data.stories.filter((s) => s.status === 'approved');
+  const rejectedTributes = data.tributes.filter((t) => t.status === 'rejected');
+  const rejectedStories = data.stories.filter((s) => s.status === 'rejected');
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'profile', label: 'Profile' },
@@ -67,31 +82,93 @@ export function AdminDashboard() {
         {tab === 'content' && <AdminContent data={data} onChanged={refresh} />}
 
         {tab === 'moderation' && (
-          <div className="space-y-6">
-            <h2 className="font-serif text-2xl font-semibold">Moderation Queue</h2>
-            {data.pendingTributes.length === 0 && data.pendingStories.length === 0 && (
-              <p className="text-gray-500">No pending items.</p>
+          <div className="space-y-10">
+            <section className="space-y-6">
+              <h2 className="font-serif text-2xl font-semibold">Moderation Queue</h2>
+              {data.pendingTributes.length === 0 && data.pendingStories.length === 0 && (
+                <p className="text-gray-500">No pending items.</p>
+              )}
+              {data.pendingTributes.map((t) => (
+                <div key={t.id} className="card">
+                  <p className="text-sm font-medium text-memorial-700">
+                    Tribute from {t.authorName}
+                    {t.isGuestbookSignature ? ' (guestbook)' : ''}
+                  </p>
+                  <p className="mt-2 text-gray-700">{t.message}</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button onClick={() => handleModerate('tribute', t.id, 'approved')} className="btn-primary text-xs">Approve</button>
+                    <button onClick={() => handleModerate('tribute', t.id, 'rejected')} className="btn-ghost text-xs text-red-600">Reject</button>
+                    <button onClick={() => handleDelete('tribute', t.id, 'tribute')} className="btn-ghost text-xs text-red-600">Delete</button>
+                  </div>
+                </div>
+              ))}
+              {data.pendingStories.map((s) => (
+                <div key={s.id} className="card">
+                  <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}</p>
+                  <p className="mt-2 text-gray-700">{s.body}</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button onClick={() => handleModerate('story', s.id, 'approved')} className="btn-primary text-xs">Approve</button>
+                    <button onClick={() => handleModerate('story', s.id, 'rejected')} className="btn-ghost text-xs text-red-600">Reject</button>
+                    <button onClick={() => handleDelete('story', s.id, 'story')} className="btn-ghost text-xs text-red-600">Delete</button>
+                  </div>
+                </div>
+              ))}
+            </section>
+
+            <section className="space-y-6">
+              <h2 className="font-serif text-2xl font-semibold">Published</h2>
+              {approvedTributes.length === 0 && approvedStories.length === 0 && (
+                <p className="text-gray-500">No published tributes or stories.</p>
+              )}
+              {approvedTributes.map((t) => (
+                <div key={t.id} className="card">
+                  <p className="text-sm font-medium text-memorial-700">
+                    Tribute from {t.authorName}
+                    {t.relationship ? ` · ${t.relationship}` : ''}
+                    {t.isGuestbookSignature ? ' (guestbook)' : ''}
+                  </p>
+                  <p className="mt-2 text-gray-700">{t.message}</p>
+                  <div className="mt-4">
+                    <button onClick={() => handleDelete('tribute', t.id, 'tribute')} className="btn-ghost text-xs text-red-600">Delete</button>
+                  </div>
+                </div>
+              ))}
+              {approvedStories.map((s) => (
+                <div key={s.id} className="card">
+                  <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}</p>
+                  <p className="mt-2 text-gray-700">{s.body}</p>
+                  <div className="mt-4">
+                    <button onClick={() => handleDelete('story', s.id, 'story')} className="btn-ghost text-xs text-red-600">Delete</button>
+                  </div>
+                </div>
+              ))}
+            </section>
+
+            {(rejectedTributes.length > 0 || rejectedStories.length > 0) && (
+              <section className="space-y-6">
+                <h2 className="font-serif text-2xl font-semibold">Rejected</h2>
+                {rejectedTributes.map((t) => (
+                  <div key={t.id} className="card opacity-80">
+                    <p className="text-sm font-medium text-memorial-700">Tribute from {t.authorName}</p>
+                    <p className="mt-2 text-gray-700">{t.message}</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <button onClick={() => handleModerate('tribute', t.id, 'approved')} className="btn-primary text-xs">Approve</button>
+                      <button onClick={() => handleDelete('tribute', t.id, 'tribute')} className="btn-ghost text-xs text-red-600">Delete</button>
+                    </div>
+                  </div>
+                ))}
+                {rejectedStories.map((s) => (
+                  <div key={s.id} className="card opacity-80">
+                    <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}</p>
+                    <p className="mt-2 text-gray-700">{s.body}</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <button onClick={() => handleModerate('story', s.id, 'approved')} className="btn-primary text-xs">Approve</button>
+                      <button onClick={() => handleDelete('story', s.id, 'story')} className="btn-ghost text-xs text-red-600">Delete</button>
+                    </div>
+                  </div>
+                ))}
+              </section>
             )}
-            {data.pendingTributes.map((t) => (
-              <div key={t.id} className="card">
-                <p className="text-sm font-medium text-memorial-700">Tribute from {t.authorName}</p>
-                <p className="mt-2 text-gray-700">{t.message}</p>
-                <div className="mt-4 flex gap-2">
-                  <button onClick={() => handleModerate('tribute', t.id, 'approved')} className="btn-primary text-xs">Approve</button>
-                  <button onClick={() => handleModerate('tribute', t.id, 'rejected')} className="btn-ghost text-xs text-red-600">Reject</button>
-                </div>
-              </div>
-            ))}
-            {data.pendingStories.map((s) => (
-              <div key={s.id} className="card">
-                <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}</p>
-                <p className="mt-2 text-gray-700">{s.body}</p>
-                <div className="mt-4 flex gap-2">
-                  <button onClick={() => handleModerate('story', s.id, 'approved')} className="btn-primary text-xs">Approve</button>
-                  <button onClick={() => handleModerate('story', s.id, 'rejected')} className="btn-ghost text-xs text-red-600">Reject</button>
-                </div>
-              </div>
-            ))}
           </div>
         )}
 

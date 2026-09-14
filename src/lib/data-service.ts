@@ -260,6 +260,24 @@ export async function updateStoryStatus(id: string, status: ContentStatus) {
   await client.models.Story.update({ id, status }, { authMode: 'userPool' });
 }
 
+export async function deleteTribute(id: string) {
+  const client = getAdminClient();
+  if (!client) {
+    localTributes = localTributes.filter((t) => t.id !== id);
+    return;
+  }
+  await client.models.Tribute.delete({ id }, { authMode: 'userPool' });
+}
+
+export async function deleteStory(id: string) {
+  const client = getAdminClient();
+  if (!client) {
+    localStories = localStories.filter((s) => s.id !== id);
+    return;
+  }
+  await client.models.Story.delete({ id }, { authMode: 'userPool' });
+}
+
 export async function updateMemorial(id: string, updates: Partial<Memorial>) {
   const client = getAdminClient();
   if (!client) {
