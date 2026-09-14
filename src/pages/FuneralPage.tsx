@@ -115,13 +115,13 @@ export function FuneralPage() {
             <div className="mx-auto max-w-xl space-y-3">
               {programItems.map((item, i) => (
                 <div key={item.id} className="flex items-start gap-4 rounded-xl bg-white p-4 shadow-sm">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold-400 text-sm font-medium text-memorial-950">
+                  <span className="type-marker">
                     {i + 1}
                   </span>
                   <div>
-                    <p className="font-medium text-memorial-900">{item.title}</p>
-                    {item.person && <p className="text-sm text-gray-600">{item.person}</p>}
-                    {item.reference && <p className="text-sm italic text-gray-500">{item.reference}</p>}
+                    <p className="type-name text-base font-semibold">{item.title}</p>
+                    {item.person && <p className="type-support mt-1 text-sm">{item.person}</p>}
+                    {item.reference && <p className="type-body mt-1 text-sm italic">{item.reference}</p>}
                   </div>
                 </div>
               ))}

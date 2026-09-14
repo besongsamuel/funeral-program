@@ -160,7 +160,7 @@ export function MemorialChat() {
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             className="fixed bottom-20 right-4 z-50 flex h-[min(600px,80vh)] w-[min(400px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-gold-300 bg-white shadow-2xl sm:bottom-24 sm:right-6"
           >
-            <div className="flex items-center justify-between border-b-2 border-gold-400 bg-memorial-900 px-4 py-3 text-white">
+            <div className="flex items-center justify-between border-b-2 border-gold-400 bg-memorial-950 px-4 py-3 text-white">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5" />
                 <span className="font-medium">{assistantName}</span>

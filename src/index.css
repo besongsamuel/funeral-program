@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import './theme.css';
 
 @tailwind base;
@@ -11,7 +10,8 @@
   }
 
   body {
-    @apply bg-cream text-gray-800 font-sans antialiased;
+    @apply bg-cream font-sans antialiased;
+    color: rgb(var(--color-ink));
   }
 
   h1, h2, h3, h4 {
@@ -21,11 +21,13 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full bg-gold-400 px-6 py-3 text-sm font-medium text-memorial-950 transition-all hover:bg-gold-500 hover:shadow-lg active:scale-95;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-gold-400 px-6 py-3 text-sm font-medium transition-all hover:bg-gold-500 hover:shadow-lg active:scale-95;
+    color: rgb(var(--color-ink));
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-gold-500 px-6 py-3 text-sm font-medium text-memorial-800 transition-all hover:bg-gold-50 active:scale-95;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-gold-500 px-6 py-3 text-sm font-medium transition-all hover:bg-gold-50 active:scale-95;
+    color: rgb(var(--color-purple-950));
   }
 
   .btn-secondary-dark {
@@ -33,7 +35,8 @@
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-memorial-700 transition-all hover:bg-gold-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all hover:bg-gold-50;
+    color: rgb(var(--color-purple-950));
   }
 
   .section-padding {
@@ -45,12 +48,12 @@
   }
 
   .page-banner {
-    @apply bg-memorial-900 py-16 text-white;
+    @apply bg-memorial-950 py-16 text-white;
     box-shadow: inset 0 -3px 0 rgb(var(--color-gold-400));
   }
 
   .page-banner-compact {
-    @apply bg-memorial-900 py-12 text-white;
+    @apply bg-memorial-950 py-12 text-white;
     box-shadow: inset 0 -3px 0 rgb(var(--color-gold-400));
   }
 
@@ -59,11 +62,76 @@
   }
 
   .input-field {
-    @apply w-full rounded-xl border border-gold-200 bg-white px-4 py-3 text-sm outline-none transition-colors focus:border-gold-500 focus:ring-2 focus:ring-gold-200;
+    @apply w-full rounded-xl border border-gold-200 bg-white px-4 py-3 font-sans text-sm outline-none transition-colors focus:border-gold-500 focus:ring-2 focus:ring-gold-200;
+    color: rgb(var(--color-ink));
   }
 
   .label {
-    @apply mb-1 block text-sm font-medium text-gray-700;
+    @apply mb-1 block font-sans text-sm font-medium;
+    color: rgb(var(--color-bronze));
+  }
+
+  /* Programme typography roles — Georgia + Aptos on the official palette */
+  .type-name {
+    @apply font-serif font-bold;
+    color: rgb(var(--color-purple-950));
+  }
+
+  .type-maiden {
+    @apply font-serif italic;
+    color: rgb(var(--color-bronze));
+  }
+
+  .type-anniversary {
+    @apply font-serif font-semibold;
+    color: rgb(var(--color-gold-400));
+  }
+
+  .type-theme {
+    @apply font-serif;
+    color: rgb(var(--color-heritage));
+  }
+
+  .type-intro {
+    @apply font-sans font-medium uppercase tracking-[0.2em];
+    color: rgb(var(--color-gold-400));
+  }
+
+  .type-body {
+    @apply font-sans;
+    color: rgb(var(--color-ink));
+  }
+
+  .type-support {
+    @apply font-sans;
+    color: rgb(var(--color-bronze));
+  }
+
+  .type-marker {
+    @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-serif text-sm font-medium text-white;
+    background-color: rgb(var(--color-purple-950));
+  }
+
+  .type-name-on-dark {
+    @apply font-serif font-bold text-white;
+  }
+
+  .type-maiden-on-dark {
+    @apply font-serif italic text-gold-200;
+  }
+
+  .type-anniversary-on-dark {
+    @apply font-serif font-semibold;
+    color: rgb(var(--color-gold-400));
+  }
+
+  .type-theme-on-dark {
+    @apply font-serif text-gold-100;
+  }
+
+  .type-intro-on-dark {
+    @apply font-sans font-medium uppercase tracking-[0.3em];
+    color: rgb(var(--color-gold-400));
   }
 
   .hero-beam {
@@ -87,6 +155,29 @@
 
   .portrait-gold-ring {
     box-shadow: 0 0 40px rgb(var(--color-gold-400) / 0.45);
+  }
+
+  .obituary-body {
+    @apply font-sans;
+    color: rgb(var(--color-ink));
+  }
+
+  .obituary-body .obituary-theme,
+  .obituary-body p.obituary-theme {
+    @apply font-serif text-center;
+    color: rgb(var(--color-heritage));
+  }
+
+  .obituary-body blockquote {
+    @apply border-l-4 border-gold-400 pl-4 font-serif italic;
+    color: rgb(var(--color-heritage));
+  }
+
+  .obituary-body a {
+    color: rgb(var(--color-purple-950));
+    text-decoration-line: underline;
+    text-decoration-color: rgb(var(--color-gold-400));
+    text-underline-offset: 2px;
   }
 }
 

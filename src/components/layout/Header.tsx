@@ -23,9 +23,9 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b-2 border-gold-400 bg-white/90 backdrop-blur-md">
       <div className="container-memorial flex h-16 items-center justify-between px-4 sm:px-6">
-        <Link to="/" className="flex items-center gap-2 text-memorial-800">
+        <Link to="/" className="type-name flex items-center gap-2">
           <Bird className="h-6 w-6" />
-          <span className="font-serif text-lg font-semibold">
+          <span className="text-lg font-semibold">
             Remembering {firstName}
           </span>
         </Link>

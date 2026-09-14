@@ -32,38 +32,42 @@ export function ObituaryPage() {
                 className="portrait-gold-ring mx-auto mb-6 h-36 w-36 rounded-full border-4 border-gold-400 object-cover object-top sm:h-44 sm:w-44"
               />
             )}
-            <h1 className="font-serif text-3xl font-bold text-memorial-900 sm:text-4xl">
+            <p className="type-intro mb-4 text-sm">Celebrating a Life of Love &amp; Legacy</p>
+            <h1 className="type-name text-3xl sm:text-4xl">
               {memorial.fullName}
             </h1>
             {memorial.maidenName && (
-              <p className="mt-1 text-lg italic text-memorial-700">née {memorial.maidenName}</p>
+              <p className="type-maiden mt-1 text-lg">née {memorial.maidenName}</p>
             )}
-            <p className="mt-4 text-sm uppercase tracking-[0.2em] text-gold-700">
-              90 Years of Grace • Faith • Family • Culture • Love • Legacy
+            <p className="type-anniversary mt-4 text-sm uppercase tracking-[0.2em]">
+              90 Years of Grace
             </p>
-            <dl className="mt-6 grid gap-3 text-sm text-gray-700 sm:grid-cols-3">
+            <p className="type-theme mt-2 text-sm uppercase tracking-[0.15em]">
+              Faith • Family • Culture • Love • Legacy
+            </p>
+            <dl className="mt-6 grid gap-3 font-sans text-sm sm:grid-cols-3">
               <div className="rounded-xl border border-gold-200 bg-white px-3 py-3">
-                <dt className="text-xs font-medium uppercase tracking-wide text-gold-700">Sunrise</dt>
-                <dd className="mt-1 font-serif text-base text-memorial-900">{formatDate(memorial.bornOn)}</dd>
+                <dt className="type-intro text-[10px]">Sunrise</dt>
+                <dd className="type-name mt-1 text-base font-semibold">{formatDate(memorial.bornOn)}</dd>
               </div>
               <div className="rounded-xl border border-gold-200 bg-white px-3 py-3">
-                <dt className="text-xs font-medium uppercase tracking-wide text-gold-700">90th Birthday</dt>
-                <dd className="mt-1 font-serif text-base text-memorial-900">{formatDate(NINETIETH_BIRTHDAY)}</dd>
+                <dt className="type-intro text-[10px]">90th Birthday</dt>
+                <dd className="type-anniversary mt-1 text-base">{formatDate(NINETIETH_BIRTHDAY)}</dd>
               </div>
               <div className="rounded-xl border border-gold-200 bg-white px-3 py-3">
-                <dt className="text-xs font-medium uppercase tracking-wide text-gold-700">Called to Glory</dt>
-                <dd className="mt-1 font-serif text-base text-memorial-900">{formatDate(memorial.diedOn)}</dd>
+                <dt className="type-intro text-[10px]">Called to Glory</dt>
+                <dd className="type-name mt-1 text-base font-semibold">{formatDate(memorial.diedOn)}</dd>
               </div>
             </dl>
           </header>
 
           {memorial.obituaryHtml ? (
             <div
-              className="obituary-body space-y-5 text-lg leading-relaxed text-gray-800"
+              className="obituary-body space-y-5 text-lg leading-relaxed"
               dangerouslySetInnerHTML={{ __html: memorial.obituaryHtml }}
             />
           ) : (
-            <p className="text-center text-gray-600">The obituary will appear here once the family publishes it.</p>
+            <p className="type-support text-center">The obituary will appear here once the family publishes it.</p>
           )}
 
           <div className="mt-10 text-center no-print">

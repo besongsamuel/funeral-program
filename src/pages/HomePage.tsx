@@ -42,7 +42,7 @@ export function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <p className="mb-4 text-sm uppercase tracking-[0.3em] text-gold-200">
+            <p className="type-intro-on-dark mb-4 text-sm">
               Celebrating a Life of Love &amp; Legacy
             </p>
 
@@ -57,20 +57,20 @@ export function HomePage() {
               />
             )}
 
-            <h1 className="font-serif text-4xl font-bold text-gold-300 sm:text-5xl lg:text-6xl">
+            <h1 className="type-name-on-dark text-4xl sm:text-5xl lg:text-6xl">
               {memorial.fullName}
             </h1>
             {memorial.maidenName && (
-              <p className="mt-2 text-lg italic text-gold-100">née {memorial.maidenName}</p>
+              <p className="type-maiden-on-dark mt-2 text-lg">née {memorial.maidenName}</p>
             )}
-            <p className="mt-4 text-lg text-gold-100 sm:text-xl">
+            <p className="type-support mt-4 text-lg text-gold-100 sm:text-xl">
               Sunrise {formatDate(memorial.bornOn)} &nbsp;|&nbsp; Sunset {formatDate(memorial.diedOn)}
             </p>
-            <p className="mt-2 text-sm uppercase tracking-[0.2em] text-gold-300">
+            <p className="type-anniversary-on-dark mt-2 text-sm uppercase tracking-[0.2em]">
               90 Years of Grace, Love &amp; Legacy
             </p>
             {memorial.tagline && (
-              <p className="mx-auto mt-6 max-w-2xl text-lg italic text-gold-50">
+              <p className="type-theme-on-dark mx-auto mt-6 max-w-2xl text-lg italic">
                 &ldquo;{memorial.tagline}&rdquo;
               </p>
             )}
@@ -108,7 +108,7 @@ export function HomePage() {
             initial={reduced ? false : { opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="mx-auto max-w-3xl text-center text-lg leading-relaxed text-gray-700"
+            className="type-body mx-auto max-w-3xl text-center text-lg leading-relaxed"
           >
             {memorial.shortTribute}
           </motion.p>
@@ -120,9 +120,9 @@ export function HomePage() {
         <section className="section-padding">
           <div className="container-memorial">
             <div className="card mx-auto max-w-xl text-center">
-              <h3 className="font-serif text-2xl font-semibold text-memorial-900">Funeral Service</h3>
-              <p className="mt-2 text-gray-600">{service.title ?? 'Celebration of Life'}</p>
-              <p className="mt-1 text-gray-600">{service.venueName}</p>
+              <h3 className="type-name font-serif text-2xl font-semibold">Funeral Service</h3>
+              <p className="type-support mt-2">{service.title ?? 'Celebration of Life'}</p>
+              <p className="type-body mt-1">{service.venueName}</p>
               <div className="mt-6 flex justify-center">
                 <Countdown targetDate={service.startsAt} />
               </div>

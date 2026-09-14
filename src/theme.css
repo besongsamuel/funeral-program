@@ -1,35 +1,51 @@
 /*
-  Brand palette from the funeral programme flyer.
-  Change these RGB channel values to restyle the whole site.
-  Tailwind maps `memorial-*` → purple and `gold-*` → gold.
+  Funeral Programme Colour Palette
+  Source: FUNERAL THANKSGIVING PROGRAMME COMMUNICATION AND PRODUCTION CHECKLIST
+
+  Ceremonial Purple  #0D0147  — primary titles, bands, icons, key panels
+  Heritage Gold      #E2A025  — flourishes, emphasis, borders, legacy highlights
+  Commemorative Bronze #864703 — Cultural Day / ceremonial accents
+  Warm Ivory         #F3F1EE  — main background, light panels
+  Heritage Green     #062506  — Sasa / cultural-feast / heritage accents
+  White              #FFFFFF  — reversed text on dark surfaces
+  Black              #000000  — body text on ivory / white
+
+  Standards: Purple dominant, Gold principal highlight.
+  White text only on sufficiently dark purple, bronze, or green.
 */
 :root {
-  /* Royal purple */
-  --color-purple-50: 248 243 250;
-  --color-purple-100: 240 232 244;
-  --color-purple-200: 220 200 230;
-  --color-purple-300: 196 163 212;
-  --color-purple-400: 155 107 184;
-  --color-purple-500: 122 62 160;
-  --color-purple-600: 100 44 138;
-  --color-purple-700: 83 31 120;
-  --color-purple-800: 69 24 106;
-  --color-purple-900: 58 18 92;
-  --color-purple-950: 42 8 72;
+  /* Ceremonial Purple scale — base #0D0147 */
+  --color-purple-50: 243 241 250;
+  --color-purple-100: 228 223 245;
+  --color-purple-200: 196 184 235;
+  --color-purple-300: 149 128 217;
+  --color-purple-400: 107 82 196;
+  --color-purple-500: 79 53 176;
+  --color-purple-600: 61 36 153;
+  --color-purple-700: 46 24 130;
+  --color-purple-800: 32 12 100;
+  --color-purple-900: 22 6 82;
+  --color-purple-950: 13 1 71;
 
-  /* Metallic gold */
-  --color-gold-50: 251 246 232;
-  --color-gold-100: 245 233 196;
-  --color-gold-200: 235 212 138;
-  --color-gold-300: 220 192 90;
-  --color-gold-400: 212 175 55;
-  --color-gold-500: 201 162 39;
-  --color-gold-600: 184 137 26;
-  --color-gold-700: 154 112 20;
-  --color-gold-800: 122 87 18;
-  --color-gold-900: 92 64 16;
-  --color-gold-950: 61 42 8;
+  /* Heritage Gold scale — base #E2A025 */
+  --color-gold-50: 252 246 232;
+  --color-gold-100: 248 234 196;
+  --color-gold-200: 242 214 140;
+  --color-gold-300: 234 190 80;
+  --color-gold-400: 226 160 37;
+  --color-gold-500: 204 140 28;
+  --color-gold-600: 176 112 20;
+  --color-gold-700: 140 88 16;
+  --color-gold-800: 106 68 14;
+  --color-gold-900: 78 50 12;
+  --color-gold-950: 48 30 6;
 
-  /* Ivory paper from the programme body */
-  --color-cream: 255 251 245;
+  /* Named programme colours */
+  --color-bronze: 134 71 3;
+  --color-heritage: 6 37 6;
+  --color-cream: 243 241 238;
+  --color-ink: 0 0 0;
+
+  /* Alias used by type roles for principal name on light surfaces */
+  --color-burgundy: 13 1 71;
 }

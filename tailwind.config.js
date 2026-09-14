@@ -15,10 +15,24 @@ export default {
         memorial: cssPalette('purple'),
         gold: cssPalette('gold'),
         cream: 'rgb(var(--color-cream) / <alpha-value>)',
+        bronze: 'rgb(var(--color-bronze) / <alpha-value>)',
+        ink: 'rgb(var(--color-ink) / <alpha-value>)',
+        heritage: 'rgb(var(--color-heritage) / <alpha-value>)',
       },
       fontFamily: {
-        serif: ['Georgia', 'Cambria', 'Times New Roman', 'serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        // Programme display face
+        serif: ['Georgia', 'Cambria', 'Times New Roman', 'Times', 'serif'],
+        // Programme body face — Aptos where installed (Office / Windows), then close system fallbacks
+        sans: [
+          'Aptos',
+          'Aptos Display',
+          'Segoe UI',
+          'Calibri',
+          'Candara',
+          'Helvetica Neue',
+          'Arial',
+          'sans-serif',
+        ],
       },
     },
   },
