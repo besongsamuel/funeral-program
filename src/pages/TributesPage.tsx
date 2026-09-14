@@ -8,9 +8,24 @@ import { submitTribute, submitStory } from '@/lib/data-service';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { Heart, BookOpen, CheckCircle } from 'lucide-react';
 
+const RELATIONSHIP_OPTIONS = [
+  'Family',
+  'Child',
+  'Grandchild',
+  'Sibling',
+  'Relative',
+  'Friend',
+  'Colleague',
+  'Neighbor',
+  'Church family',
+] as const;
+
+const OTHER_RELATIONSHIP = 'Other';
+
 interface TributeForm {
   authorName: string;
   relationship: string;
+  otherRelationship: string;
   message: string;
   isGuestbookSignature: boolean;
 }
@@ -28,8 +43,11 @@ export function TributesPage() {
   const queryClient = useQueryClient();
   const reduced = useReducedMotion();
 
-  const tributeForm = useForm<TributeForm>({ defaultValues: { isGuestbookSignature: false } });
+  const tributeForm = useForm<TributeForm>({
+    defaultValues: { isGuestbookSignature: false, relationship: '', otherRelationship: '' },
+  });
   const storyForm = useForm<StoryForm>();
+  const selectedRelationship = tributeForm.watch('relationship');
 
   if (!data) return null;
 
@@ -38,8 +56,17 @@ export function TributesPage() {
   const tributes = approvedTributes.filter((t) => !t.isGuestbookSignature);
 
   const onTributeSubmit = async (form: TributeForm) => {
+    const relationship =
+      tab === 'guestbook'
+        ? undefined
+        : form.relationship === OTHER_RELATIONSHIP
+          ? form.otherRelationship.trim()
+          : form.relationship || undefined;
+
     await submitTribute({
-      ...form,
+      authorName: form.authorName,
+      relationship,
+      message: form.message,
       isGuestbookSignature: tab === 'guestbook',
     });
     setSubmitted(true);
@@ -121,9 +148,34 @@ export function TributesPage() {
                   <input {...tributeForm.register('authorName', { required: true })} className="input-field" />
                 </div>
                 {tab !== 'guestbook' && (
-                  <div>
-                    <label className="label">Relationship</label>
-                    <input {...tributeForm.register('relationship')} className="input-field" placeholder="Friend, colleague, neighbor..." />
+                  <div className="space-y-3">
+                    <div>
+                      <label className="label" htmlFor="tribute-relationship">Relationship</label>
+                      <select
+                        id="tribute-relationship"
+                        {...tributeForm.register('relationship')}
+                        className="input-field"
+                      >
+                        <option value="">Select a relationship</option>
+                        {RELATIONSHIP_OPTIONS.map((option) => (
+                          <option key={option} value={option}>{option}</option>
+                        ))}
+                        <option value={OTHER_RELATIONSHIP}>{OTHER_RELATIONSHIP}</option>
+                      </select>
+                    </div>
+                    {selectedRelationship === OTHER_RELATIONSHIP && (
+                      <div>
+                        <label className="label" htmlFor="tribute-other-relationship">Please specify</label>
+                        <input
+                          id="tribute-other-relationship"
+                          {...tributeForm.register('otherRelationship', {
+                            required: selectedRelationship === OTHER_RELATIONSHIP,
+                          })}
+                          className="input-field"
+                          placeholder="Your relationship"
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
                 <div>

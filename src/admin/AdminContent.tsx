@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { isAmplifyConfigured } from '@/lib/amplify';
 import { adminRemove, adminSave, isDraftId, newDraftId } from '@/lib/admin-api';
+import { uploadGalleryImages } from '@/lib/storage';
 import type {
   BiographySection,
   DonationCause,
@@ -288,45 +289,56 @@ export function AdminContent({ data, onChanged }: { data: MemorialContext; onCha
 
       {section === 'gallery' && (
         <div className="space-y-6">
-          {[...data.galleryAlbums, ...albumDrafts].map((album) => (
-            <div key={album.id} className="space-y-3">
-              <AlbumForm
-                item={album}
-                onChanged={() => refresh(() => setAlbumDrafts((items) => items.filter((row) => row.id !== album.id)))}
-              />
-              {!isDraftId(album.id) && (
-                <div className="ml-4 space-y-3 border-l border-memorial-100 pl-4">
-                  {data.galleryPhotos
-                    .filter((photo) => photo.albumId === album.id)
-                    .concat(photoDrafts.filter((photo) => photo.albumId === album.id))
-                    .map((photo) => (
+          {[...data.galleryAlbums, ...albumDrafts].map((album) => {
+            const albumPhotos = data.galleryPhotos
+              .filter((photo) => photo.albumId === album.id)
+              .concat(photoDrafts.filter((photo) => photo.albumId === album.id));
+            return (
+              <div key={album.id} className="space-y-3">
+                <AlbumForm
+                  item={album}
+                  onChanged={() => refresh(() => setAlbumDrafts((items) => items.filter((row) => row.id !== album.id)))}
+                />
+                {!isDraftId(album.id) && (
+                  <div className="ml-4 space-y-3 border-l border-gold-200 pl-4">
+                    <AlbumPhotoUploader
+                      memorialId={memorialId}
+                      albumId={album.id}
+                      nextSortOrder={albumPhotos.length + 1}
+                      connected={connected}
+                      onUploaded={async () => {
+                        await refresh();
+                      }}
+                    />
+                    {albumPhotos.map((photo) => (
                       <PhotoForm
                         key={photo.id}
                         item={photo}
                         onChanged={() => refresh(() => setPhotoDrafts((items) => items.filter((row) => row.id !== photo.id)))}
                       />
                     ))}
-                  <AddButton
-                    onClick={() =>
-                      setPhotoDrafts((items) => [
-                        ...items,
-                        {
-                          id: newDraftId(),
-                          memorialId,
-                          albumId: album.id,
-                          url: '',
-                          caption: '',
-                          sortOrder: data.galleryPhotos.filter((photo) => photo.albumId === album.id).length + 1,
-                        },
-                      ])
-                    }
-                  >
-                    Add photo
-                  </AddButton>
-                </div>
-              )}
-            </div>
-          ))}
+                    <AddButton
+                      onClick={() =>
+                        setPhotoDrafts((items) => [
+                          ...items,
+                          {
+                            id: newDraftId(),
+                            memorialId,
+                            albumId: album.id,
+                            url: '',
+                            caption: '',
+                            sortOrder: albumPhotos.length + items.filter((photo) => photo.albumId === album.id).length + 1,
+                          },
+                        ])
+                      }
+                    >
+                      Add photo by URL
+                    </AddButton>
+                  </div>
+                )}
+              </div>
+            );
+          })}
           <AddButton
             onClick={() =>
               setAlbumDrafts((items) => [
@@ -647,6 +659,102 @@ function ProgramForm({ item, onChanged }: { item: ProgramItem; onChanged: () => 
   );
 }
 
+function AlbumPhotoUploader({
+  memorialId,
+  albumId,
+  nextSortOrder,
+  connected,
+  onUploaded,
+}: {
+  memorialId: string;
+  albumId: string;
+  nextSortOrder: number;
+  connected: boolean;
+  onUploaded: () => Promise<void> | void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [progress, setProgress] = useState('');
+
+  const handleFiles = async (fileList: FileList | null) => {
+    if (!fileList?.length) return;
+    if (!connected) {
+      setMessage('Connect Amplify Storage to upload images.');
+      return;
+    }
+
+    setUploading(true);
+    setMessage('');
+    setProgress(`Uploading 0 of ${fileList.length}…`);
+
+    try {
+      const files = Array.from(fileList);
+      const uploaded: { url: string }[] = [];
+      for (const [index, file] of files.entries()) {
+        setProgress(`Uploading ${index + 1} of ${files.length}…`);
+        const [item] = await uploadGalleryImages([file], memorialId, albumId);
+        uploaded.push(item);
+      }
+      let saved = 0;
+      for (const [index, item] of uploaded.entries()) {
+        setProgress(`Saving ${index + 1} of ${uploaded.length}…`);
+        await adminSave('GalleryPhoto', {
+          id: newDraftId(),
+          memorialId,
+          albumId,
+          url: item.url,
+          caption: '',
+          sortOrder: nextSortOrder + index,
+        });
+        saved += 1;
+      }
+      setMessage(`Uploaded ${saved} image${saved === 1 ? '' : 's'}.`);
+      setProgress('');
+      if (inputRef.current) inputRef.current.value = '';
+      await onUploaded();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Upload failed.');
+      setProgress('');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="rounded-xl border border-dashed border-gold-300 bg-gold-50/40 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-medium text-memorial-900">Upload images to S3</p>
+          <p className="mt-1 text-xs text-gray-600">
+            Select one or many photos. They are stored under <code>memorial-media/</code> and saved to this album.
+          </p>
+        </div>
+        <button
+          type="button"
+          className="btn-primary text-xs"
+          disabled={uploading || !connected}
+          onClick={() => inputRef.current?.click()}
+        >
+          {uploading ? 'Uploading…' : 'Choose images'}
+        </button>
+      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={(event) => {
+          void handleFiles(event.target.files);
+        }}
+      />
+      {progress && <p className="mt-2 text-xs text-memorial-700">{progress}</p>}
+      {message && <p className="mt-2 text-xs text-gray-700">{message}</p>}
+    </div>
+  );
+}
+
 function AlbumForm({ item, onChanged }: { item: GalleryAlbum; onChanged: () => Promise<void> | void }) {
   const form = useRecordForm(item);
   return (
@@ -681,6 +789,28 @@ function AlbumForm({ item, onChanged }: { item: GalleryAlbum; onChanged: () => P
 
 function PhotoForm({ item, onChanged }: { item: GalleryPhoto; onChanged: () => Promise<void> | void }) {
   const form = useRecordForm(item);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState('');
+  const connected = isAmplifyConfigured();
+
+  const replaceImage = async (files: FileList | null) => {
+    const file = files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadMessage('');
+    try {
+      const [uploaded] = await uploadGalleryImages([file], item.memorialId, item.albumId);
+      form.set('url', uploaded.url);
+      setUploadMessage('Image uploaded. Save to keep this URL.');
+      if (fileRef.current) fileRef.current.value = '';
+    } catch (error) {
+      setUploadMessage(error instanceof Error ? error.message : 'Upload failed.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <form className="card space-y-3" onSubmit={(event) => form.submit(event, async (values) => {
       await adminSave('GalleryPhoto', values);
@@ -689,6 +819,26 @@ function PhotoForm({ item, onChanged }: { item: GalleryPhoto; onChanged: () => P
       <Field label="Image URL">
         <TextInput value={form.draft.url} onChange={(e) => form.set('url', e.target.value)} required />
       </Field>
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          className="btn-secondary text-xs"
+          disabled={uploading || !connected}
+          onClick={() => fileRef.current?.click()}
+        >
+          {uploading ? 'Uploading…' : 'Replace from computer'}
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(event) => {
+            void replaceImage(event.target.files);
+          }}
+        />
+        {uploadMessage && <span className="text-xs text-gray-600">{uploadMessage}</span>}
+      </div>
       <Field label="Caption">
         <TextInput value={form.draft.caption ?? ''} onChange={(e) => form.set('caption', e.target.value)} />
       </Field>

@@ -18,9 +18,15 @@ export const demoContext: MemorialContext = {
     tagline: 'Her legacy lives on in us all.',
     shortTribute:
       'A beloved mother, a cherished grandmother, a pillar of family, a legacy forever. Her kindness lives on. Her love endures. Her legacy inspires us all.',
-    obituaryHtml: `<p>Mami Christiana Enanga Besong, née Njie Nambeke, was called home on 14 August 2026 at the age of 90. Born on 24 May 1936, she was celebrated by her family as a beloved mother, a cherished grandmother, and a pillar of the family whose kindness, love, and legacy continue to inspire all who knew her.</p>
-<p>The family will honour 90 years of grace, love, and legacy through a Funeral and Thanksgiving Programme from 7 to 19 November 2026. Gatherings will be held at the family residence in Clerk’s Quarter, Ebenezer Baptist Church Limbe, and the family compound in Limbola.</p>
-<p>Family and friends are invited to celebrate a life well lived. “Blessed are the dead who die in the Lord.” — Revelation 14:13</p>`,
+    obituaryHtml: `<p class="obituary-theme">90 Years of Grace • Faith • Family • Culture • Love • Legacy</p>
+<p>Celebrating the life and legacy of Mami Christiana Enanga Besong, née Njie Nambeke.</p>
+<p><strong>Born</strong> 24 May 1936 &nbsp;|&nbsp; <strong>90th Birthday</strong> 24 May 2026 &nbsp;|&nbsp; <strong>Called to Glory</strong> 14 August 2026</p>
+<blockquote>
+<p>“Blessed are the dead who die in the Lord from now on. ‘Yes,’ says the Spirit, ‘that they may rest from their labor, and their works follow them.’”</p>
+<footer>— Revelation 14:13</footer>
+</blockquote>
+<p>The family will honour her life through a Funeral and Thanksgiving Programme from 7 to 19 November 2026. Gatherings will be held at the family residence in Clerk’s Quarter, Ebenezer Baptist Church Limbe, and the family compound in Limbola.</p>
+<p>Family and friends are invited to celebrate a life well lived. <a href="/funeral">View the Funeral &amp; Thanksgiving Programme</a>.</p>`,
     isPublished: true,
     programPdfUrl: programme,
   },
@@ -70,42 +76,50 @@ export const demoContext: MemorialContext = {
     {
       id: 'tl-2',
       memorialId: MEMORIAL_ID,
-      eventDate: '2026-08-14',
-      title: 'Sunset',
-      description: 'Called home after 90 years of grace, love, and legacy.',
+      eventDate: '2026-05-24',
+      title: '90th Birthday',
+      description: 'Celebrating 90 years of grace, faith, family, culture, love, and legacy.',
       sortOrder: 2,
     },
     {
       id: 'tl-3',
       memorialId: MEMORIAL_ID,
-      eventDate: '2026-11-07',
-      title: 'Opening of Mourning',
-      description: 'Funeral and Thanksgiving Programme begins at the family residence, Clerk’s Quarter.',
+      eventDate: '2026-08-14',
+      title: 'Called to Glory',
+      description: 'Called home after 90 years of grace, faith, family, culture, love, and legacy.',
       sortOrder: 3,
     },
     {
       id: 'tl-4',
       memorialId: MEMORIAL_ID,
-      eventDate: '2026-11-14',
-      title: 'Funeral, Burial & Grand Celebration of Life',
-      description: 'Removal, viewing, funeral service at Ebenezer Baptist Church Limbe, burial at the family compound Limbola, and a grand celebration of Mami’s 90-year legacy.',
+      eventDate: '2026-11-07',
+      title: 'Opening of Mourning',
+      description: 'Funeral and Thanksgiving Programme begins at the family residence, Clerk’s Quarter.',
       sortOrder: 4,
     },
     {
       id: 'tl-5',
       memorialId: MEMORIAL_ID,
-      eventDate: '2026-11-15',
-      title: 'Special Thanksgiving Church Service',
-      description: 'Thanksgiving service at Ebenezer Baptist Church Limbe, followed by a reception at the family residence.',
+      eventDate: '2026-11-14',
+      title: 'Funeral, Burial & Grand Celebration of Life',
+      description: 'Removal, viewing, funeral service at Ebenezer Baptist Church Limbe, burial at the family compound Limbola, and a grand celebration of Mami’s 90-year legacy.',
       sortOrder: 5,
     },
     {
       id: 'tl-6',
       memorialId: MEMORIAL_ID,
+      eventDate: '2026-11-15',
+      title: 'Special Thanksgiving Church Service',
+      description: 'Thanksgiving service at Ebenezer Baptist Church Limbe, followed by a reception at the family residence.',
+      sortOrder: 6,
+    },
+    {
+      id: 'tl-7',
+      memorialId: MEMORIAL_ID,
       eventDate: '2026-11-19',
       title: 'Sasa / Cultural Feast',
       description: 'Cultural feast at the family compound, Limbola.',
-      sortOrder: 6,
+      sortOrder: 7,
     },
   ],
   familyMembers: [

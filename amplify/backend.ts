@@ -1,6 +1,7 @@
 import { defineBackend } from '@aws-amplify/backend';
-import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { AnyPrincipal, Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { FunctionUrlAuthType, HttpMethod } from 'aws-cdk-lib/aws-lambda';
+import { CfnBucket, HttpMethods } from 'aws-cdk-lib/aws-s3';
 import { auth } from './auth/resource';
 import { data } from './data/resource';
 import { storage } from './storage/resource';
@@ -13,6 +14,32 @@ const backend = defineBackend({
   storage,
   memorialAssistant,
   tributeGuard,
+});
+
+// Allow anonymous HTTP reads of gallery/media objects so <img src> works without Cognito.
+const mediaBucket = backend.storage.resources.bucket;
+const cfnMediaBucket = mediaBucket.node.defaultChild as CfnBucket;
+cfnMediaBucket.publicAccessBlockConfiguration = {
+  blockPublicAcls: false,
+  blockPublicPolicy: false,
+  ignorePublicAcls: false,
+  restrictPublicBuckets: false,
+};
+mediaBucket.addToResourcePolicy(
+  new PolicyStatement({
+    sid: 'PublicReadMemorialMedia',
+    effect: Effect.ALLOW,
+    principals: [new AnyPrincipal()],
+    actions: ['s3:GetObject'],
+    resources: [`${mediaBucket.bucketArn}/memorial-media/*`],
+  }),
+);
+mediaBucket.addCorsRule({
+  allowedMethods: [HttpMethods.GET, HttpMethods.HEAD, HttpMethods.PUT, HttpMethods.POST],
+  allowedOrigins: ['*'],
+  allowedHeaders: ['*'],
+  exposedHeaders: ['ETag', 'x-amz-request-id'],
+  maxAge: 3000,
 });
 
 const assistantFn = backend.memorialAssistant.resources.lambda;
