@@ -8,6 +8,10 @@ frontend:
         - yarn install --frozen-lockfile
     build:
       commands:
+        - |
+          AWS_REGION=us-east-1 npx ampx generate outputs --stack "${AMPLIFY_BACKEND_STACK:-amplify-memorialwebsite-besongsamuel-sandbox-b5bf329f2b}" \
+            || cp config/backend-outputs.json amplify_outputs.json
+        - test -s amplify_outputs.json
         - yarn build
   artifacts:
     baseDirectory: dist

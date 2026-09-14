@@ -3,8 +3,15 @@ import react from '@vitejs/plugin-react'
 import fs from 'node:fs'
 import path from 'node:path'
 
+function resolveAmplifyOutputs() {
+  const candidates = [
+    path.resolve(__dirname, 'amplify_outputs.json'),
+    path.resolve(__dirname, 'config/backend-outputs.json'),
+  ]
+  return candidates.find((file) => fs.existsSync(file))
+}
+
 function serveAmplifyOutputs(): Plugin {
-  const src = path.resolve(__dirname, 'amplify_outputs.json')
   return {
     name: 'amplify-outputs',
     configureServer(server) {
@@ -13,7 +20,8 @@ function serveAmplifyOutputs(): Plugin {
           next()
           return
         }
-        if (!fs.existsSync(src)) {
+        const src = resolveAmplifyOutputs()
+        if (!src) {
           res.statusCode = 404
           res.end()
           return
@@ -23,7 +31,8 @@ function serveAmplifyOutputs(): Plugin {
       })
     },
     generateBundle() {
-      if (!fs.existsSync(src)) return
+      const src = resolveAmplifyOutputs()
+      if (!src) return
       this.emitFile({
         type: 'asset',
         fileName: 'amplify_outputs.json',
