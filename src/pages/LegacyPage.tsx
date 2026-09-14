@@ -15,11 +15,11 @@ export function LegacyPage() {
 
   return (
     <div>
-      <section className="bg-memorial-900 py-16 text-white">
+      <section className="page-banner">
         <div className="container-memorial px-4 text-center">
           <h1 className="font-serif text-4xl font-bold">Life & Legacy</h1>
           <p className="mt-3 text-memorial-200">The story of {data.memorial.fullName}</p>
-          <Link to="/legacy/obituary" className="btn-secondary mt-6 border-memorial-300 text-memorial-100">
+          <Link to="/legacy/obituary" className="btn-secondary-dark mt-6">
             View Obituary
           </Link>
         </div>
@@ -55,7 +55,7 @@ export function LegacyPage() {
         <div className="container-memorial">
           <SectionHeading title="Timeline" subtitle="Milestones through the years" />
           <div className="relative mx-auto max-w-2xl">
-            <div className="absolute left-4 top-0 h-full w-0.5 bg-memorial-300 md:left-1/2" />
+            <div className="absolute left-4 top-0 h-full w-0.5 bg-gold-300 md:left-1/2" />
             {timelineEvents.map((event, i) => (
               <motion.div
                 key={event.id}
@@ -72,7 +72,7 @@ export function LegacyPage() {
                     {event.description && <p className="mt-2 text-sm text-gray-600">{event.description}</p>}
                   </div>
                 </div>
-                <div className="absolute left-2.5 top-4 h-4 w-4 rounded-full border-4 border-memorial-500 bg-white md:left-1/2 md:-translate-x-1/2" />
+                <div className="absolute left-2.5 top-4 h-4 w-4 rounded-full border-4 border-gold-400 bg-white md:left-1/2 md:-translate-x-1/2" />
               </motion.div>
             ))}
           </div>

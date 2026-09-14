@@ -158,9 +158,9 @@ export function MemorialChat() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-20 right-4 z-50 flex h-[min(600px,80vh)] w-[min(400px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-memorial-200 bg-white shadow-2xl sm:bottom-24 sm:right-6"
+            className="fixed bottom-20 right-4 z-50 flex h-[min(600px,80vh)] w-[min(400px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-gold-300 bg-white shadow-2xl sm:bottom-24 sm:right-6"
           >
-            <div className="flex items-center justify-between bg-memorial-700 px-4 py-3 text-white">
+            <div className="flex items-center justify-between border-b-2 border-gold-400 bg-memorial-900 px-4 py-3 text-white">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5" />
                 <span className="font-medium">{assistantName}</span>
@@ -187,8 +187,8 @@ export function MemorialChat() {
                   <div
                     className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${
                       msg.role === 'user'
-                        ? 'bg-memorial-700 text-white'
-                        : 'bg-memorial-50 text-gray-800'
+                        ? 'bg-memorial-800 text-gold-50'
+                        : 'bg-gold-50 text-gray-800'
                     }`}
                   >
                     {renderContent(msg.content)}
@@ -201,7 +201,7 @@ export function MemorialChat() {
                   {[0, 1, 2].map((i) => (
                     <motion.div
                       key={i}
-                      className="h-2 w-2 rounded-full bg-memorial-400"
+                      className="h-2 w-2 rounded-full bg-gold-400"
                       animate={{ y: [0, -6, 0] }}
                       transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.15 }}
                     />
@@ -211,7 +211,7 @@ export function MemorialChat() {
               <div ref={bottomRef} />
             </div>
 
-            <div className="border-t border-memorial-100 p-3">
+            <div className="border-t border-gold-200 p-3">
               {data.aiQuickQuestions.length > 0 && (
                 <div className="mb-3 flex max-h-24 flex-wrap gap-2 overflow-y-auto">
                   {data.aiQuickQuestions.map((q) => (
@@ -220,7 +220,7 @@ export function MemorialChat() {
                       type="button"
                       onClick={() => sendMessage(q.questionText)}
                       disabled={loading}
-                      className="rounded-full border border-memorial-200 bg-memorial-50 px-3 py-1.5 text-xs text-memorial-700 hover:bg-memorial-100 disabled:opacity-50"
+                      className="rounded-full border border-gold-300 bg-gold-50 px-3 py-1.5 text-xs text-memorial-800 hover:bg-gold-100 disabled:opacity-50"
                     >
                       {q.label}
                     </button>
@@ -238,13 +238,13 @@ export function MemorialChat() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder={`Ask about ${firstName}...`}
-                  className="flex-1 rounded-full border border-memorial-200 px-4 py-2 text-sm outline-none focus:border-memorial-500"
+                  className="flex-1 rounded-full border border-gold-200 px-4 py-2 text-sm outline-none focus:border-gold-500"
                   maxLength={1000}
                 />
                 <button
                   type="submit"
                   disabled={loading || !input.trim()}
-                  className="rounded-full bg-memorial-700 p-2.5 text-white disabled:opacity-50"
+                  className="rounded-full bg-gold-400 p-2.5 text-memorial-950 disabled:opacity-50"
                   aria-label="Send"
                 >
                   <Send className="h-4 w-4" />
@@ -259,7 +259,7 @@ export function MemorialChat() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setOpen(!open)}
-        className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full bg-memorial-700 px-5 py-3 text-sm font-medium text-white shadow-lg hover:bg-memorial-800 sm:bottom-6 sm:right-6"
+        className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full bg-gold-400 px-5 py-3 text-sm font-medium text-memorial-950 shadow-lg hover:bg-gold-500 sm:bottom-6 sm:right-6"
       >
         <MessageCircle className="h-5 w-5" />
         <span className="hidden sm:inline">Ask about {firstName}</span>

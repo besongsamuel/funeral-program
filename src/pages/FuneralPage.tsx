@@ -38,7 +38,7 @@ export function FuneralPage() {
 
   return (
     <div>
-      <section className="bg-memorial-900 py-16 text-white">
+      <section className="page-banner">
         <div className="container-memorial px-4 text-center">
           <h1 className="font-serif text-4xl font-bold">Funeral &amp; Thanksgiving Programme</h1>
           <p className="mt-3 text-memorial-200">Honoring {memorial.fullName}</p>
@@ -46,13 +46,13 @@ export function FuneralPage() {
             07 – 19 November 2026
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Link to="/funeral/livestream" className="btn-secondary border-memorial-300 text-memorial-100">
+            <Link to="/funeral/livestream" className="btn-secondary-dark">
               <Video className="h-4 w-4" /> Watch Livestream
             </Link>
             {memorial.programPdfUrl && (
               <a
                 href={memorial.programPdfUrl}
-                className="btn-secondary border-memorial-300 text-memorial-100"
+                className="btn-secondary-dark"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -68,7 +68,7 @@ export function FuneralPage() {
           <SectionHeading title="Programme of Events" subtitle="All times are local to Limbe, Cameroon" />
           {days.map(([day, events]) => (
             <div key={day}>
-              <h3 className="mb-4 font-serif text-2xl font-semibold text-memorial-900">
+              <h3 className="mb-4 border-l-4 border-gold-400 pl-3 font-serif text-2xl font-semibold text-memorial-900">
                 {formatDate(day)}
               </h3>
               <div className="space-y-4">
@@ -79,22 +79,22 @@ export function FuneralPage() {
                     </h4>
                     <div className="mt-4 grid gap-3 text-sm text-gray-700 sm:grid-cols-2">
                       <div className="flex items-start gap-2">
-                        <Clock className="mt-0.5 h-4 w-4 shrink-0 text-memorial-600" />
+                        <Clock className="mt-0.5 h-4 w-4 shrink-0 text-gold-600" />
                         <span>{event.timeLabel ? event.timeLabel : formatDateTime(event.startsAt)}</span>
                       </div>
                       <div className="flex items-start gap-2">
-                        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-memorial-600" />
+                        <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gold-600" />
                         <span>{event.venueName}{event.address ? ` — ${event.address}` : ''}</span>
                       </div>
                       {event.parkingNotes && (
                         <div className="flex items-start gap-2">
-                          <Car className="mt-0.5 h-4 w-4 shrink-0 text-memorial-600" />
+                          <Car className="mt-0.5 h-4 w-4 shrink-0 text-gold-600" />
                           <span>{event.parkingNotes}</span>
                         </div>
                       )}
                       {event.dressCode && (
                         <div className="flex items-start gap-2">
-                          <Shirt className="mt-0.5 h-4 w-4 shrink-0 text-memorial-600" />
+                          <Shirt className="mt-0.5 h-4 w-4 shrink-0 text-gold-600" />
                           <span>{event.dressCode}</span>
                         </div>
                       )}
@@ -115,7 +115,7 @@ export function FuneralPage() {
             <div className="mx-auto max-w-xl space-y-3">
               {programItems.map((item, i) => (
                 <div key={item.id} className="flex items-start gap-4 rounded-xl bg-white p-4 shadow-sm">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-memorial-100 text-sm font-medium text-memorial-700">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gold-400 text-sm font-medium text-memorial-950">
                     {i + 1}
                   </span>
                   <div>

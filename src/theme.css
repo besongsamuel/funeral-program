@@ -1,0 +1,35 @@
+/*
+  Brand palette from the funeral programme flyer.
+  Change these RGB channel values to restyle the whole site.
+  Tailwind maps `memorial-*` → purple and `gold-*` → gold.
+*/
+:root {
+  /* Royal purple */
+  --color-purple-50: 248 243 250;
+  --color-purple-100: 240 232 244;
+  --color-purple-200: 220 200 230;
+  --color-purple-300: 196 163 212;
+  --color-purple-400: 155 107 184;
+  --color-purple-500: 122 62 160;
+  --color-purple-600: 100 44 138;
+  --color-purple-700: 83 31 120;
+  --color-purple-800: 69 24 106;
+  --color-purple-900: 58 18 92;
+  --color-purple-950: 42 8 72;
+
+  /* Metallic gold */
+  --color-gold-50: 251 246 232;
+  --color-gold-100: 245 233 196;
+  --color-gold-200: 235 212 138;
+  --color-gold-300: 220 192 90;
+  --color-gold-400: 212 175 55;
+  --color-gold-500: 201 162 39;
+  --color-gold-600: 184 137 26;
+  --color-gold-700: 154 112 20;
+  --color-gold-800: 122 87 18;
+  --color-gold-900: 92 64 16;
+  --color-gold-950: 61 42 8;
+
+  /* Ivory paper from the programme body */
+  --color-cream: 255 251 245;
+}

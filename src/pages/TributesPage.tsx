@@ -56,7 +56,7 @@ export function TributesPage() {
 
   return (
     <div>
-      <section className="bg-memorial-900 py-16 text-white">
+      <section className="page-banner">
         <div className="container-memorial px-4 text-center">
           <h1 className="font-serif text-4xl font-bold">Tributes & Condolences</h1>
           <p className="mt-3 text-memorial-200">Share your memories and messages</p>
@@ -71,7 +71,7 @@ export function TributesPage() {
                 key={t}
                 onClick={() => { setTab(t); setSubmitted(false); }}
                 className={`rounded-full px-4 py-2 text-sm font-medium capitalize ${
-                  tab === t ? 'bg-memorial-700 text-white' : 'bg-memorial-100 text-memorial-700'
+                  tab === t ? 'bg-gold-400 text-memorial-950' : 'bg-gold-50 text-memorial-800'
                 }`}
               >
                 {t === 'story' ? 'Share a Story' : t}

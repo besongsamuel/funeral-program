@@ -30,7 +30,7 @@ export function Countdown({ targetDate }: CountdownProps) {
         { value: minutes, label: 'Minutes' },
       ].map((item) => (
         <div key={item.label} className="text-center">
-          <div className="rounded-xl bg-memorial-100 px-4 py-3 font-serif text-2xl font-bold text-memorial-800">
+          <div className="rounded-xl border-2 border-gold-400 bg-memorial-50 px-4 py-3 font-serif text-2xl font-bold text-memorial-900">
             {item.value}
           </div>
           <p className="mt-1 text-xs text-gray-500">{item.label}</p>

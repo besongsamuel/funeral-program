@@ -247,7 +247,7 @@ export function AdminGuard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="border-b bg-white px-6 py-4 flex items-center justify-between">
+      <header className="flex items-center justify-between border-b-2 border-gold-400 bg-white px-6 py-4">
         <h1 className="font-serif text-xl font-semibold text-memorial-900">Memorial Admin</h1>
         <button onClick={handleLogout} className="btn-ghost text-sm">Sign Out</button>
       </header>

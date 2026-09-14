@@ -39,8 +39,8 @@ function LilyCluster({ className, gradientId }: { className?: string; gradientId
       </g>
       <defs>
         <linearGradient id={gradientId} x1="80" y1="40" x2="150" y2="130">
-          <stop stopColor="#fff7ed" />
-          <stop offset="1" stopColor="#e9d5ff" stopOpacity="0.85" />
+          <stop stopColor="#fbf6e8" />
+          <stop offset="1" stopColor="#dcc8e6" stopOpacity="0.85" />
         </linearGradient>
       </defs>
     </svg>
@@ -51,7 +51,7 @@ function Dove({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 64 40" fill="currentColor" className={className} aria-hidden>
       <path d="M8 24c8-2 14-10 22-12 4-6 12-10 20-8-6 4-8 10-6 16 8 2 14 8 16 16-10-4-18-4-26 0-6 2-14 4-22-2-4-4-6-8-4-10z" />
-      <circle cx="48" cy="12" r="1.6" fill="#3b0764" />
+      <circle cx="48" cy="12" r="1.6" fill="rgb(var(--color-purple-950))" />
     </svg>
   );
 }
@@ -59,10 +59,10 @@ function Dove({ className }: { className?: string }) {
 export function HeroBackdrop({ reduced }: { reduced: boolean }) {
   return (
     <div className="hero-atmosphere pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_38%,rgba(168,85,247,0.5)_0%,rgba(59,7,100,0.15)_46%,transparent_72%)]" />
-      <div className="absolute left-1/2 top-[28%] h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-amber-100/15 blur-3xl" />
-      <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-fuchsia-400/10 blur-3xl" />
-      <div className="absolute -right-16 bottom-10 h-96 w-96 rounded-full bg-violet-300/10 blur-3xl" />
+      <div className="hero-radial absolute inset-0" />
+      <div className="absolute left-1/2 top-[28%] h-[28rem] w-[28rem] -translate-x-1/2 rounded-full bg-gold-200/20 blur-3xl" />
+      <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-gold-300/10 blur-3xl" />
+      <div className="absolute -right-16 bottom-10 h-96 w-96 rounded-full bg-memorial-400/15 blur-3xl" />
 
       <div className={`hero-beam absolute left-1/2 top-0 h-[55%] w-[min(70%,36rem)] -translate-x-1/2 ${reduced ? '' : 'hero-beam-animate'}`} />
 
@@ -83,7 +83,7 @@ export function HeroBackdrop({ reduced }: { reduced: boolean }) {
       {motes.map((mote, i) => (
         <span
           key={i}
-          className={`hero-mote absolute rounded-full bg-amber-100/80 shadow-[0_0_10px_rgba(254,243,199,0.8)] ${reduced ? '' : 'hero-mote-animate'}`}
+          className={`hero-mote absolute rounded-full bg-gold-100/80 shadow-[0_0_10px_rgb(var(--color-gold-200)_/_0.8)] ${reduced ? '' : 'hero-mote-animate'}`}
           style={{
             left: mote.left,
             top: mote.top,

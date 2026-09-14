@@ -22,7 +22,7 @@ export function GalleryPage() {
 
   return (
     <div>
-      <section className="bg-memorial-900 py-16 text-white">
+      <section className="page-banner">
         <div className="container-memorial px-4 text-center">
           <h1 className="font-serif text-4xl font-bold">Gallery</h1>
           <p className="mt-3 text-memorial-200">Moments captured through the years</p>
@@ -35,7 +35,7 @@ export function GalleryPage() {
             <button
               onClick={() => setActiveAlbum(null)}
               className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                !activeAlbum ? 'bg-memorial-700 text-white' : 'bg-memorial-100 text-memorial-700 hover:bg-memorial-200'
+                !activeAlbum ? 'bg-gold-400 text-memorial-950' : 'bg-gold-50 text-memorial-800 hover:bg-gold-100'
               }`}
             >
               All
@@ -45,7 +45,7 @@ export function GalleryPage() {
                 key={album.id}
                 onClick={() => setActiveAlbum(album.id)}
                 className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                  activeAlbum === album.id ? 'bg-memorial-700 text-white' : 'bg-memorial-100 text-memorial-700 hover:bg-memorial-200'
+                  activeAlbum === album.id ? 'bg-gold-400 text-memorial-950' : 'bg-gold-50 text-memorial-800 hover:bg-gold-100'
                 }`}
               >
                 {album.name}

@@ -10,7 +10,7 @@ export function Footer() {
   const { memorial } = data;
 
   return (
-    <footer className="border-t border-memorial-100 bg-memorial-950 text-memorial-100">
+    <footer className="border-t-4 border-gold-400 bg-memorial-950 text-memorial-100">
       <div className="container-memorial section-padding">
         <div className="grid gap-8 md:grid-cols-3">
           <div>
@@ -49,7 +49,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-memorial-800 pt-8 text-center text-xs text-memorial-500">
+        <div className="mt-12 border-t border-gold-700/50 pt-8 text-center text-xs text-gold-200">
           <p>In loving memory of {memorial.fullName}</p>
         </div>
       </div>

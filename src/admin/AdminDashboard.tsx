@@ -53,7 +53,7 @@ export function AdminDashboard() {
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`mb-1 w-full rounded-lg px-4 py-2.5 text-left text-sm font-medium ${
-              tab === t.id ? 'bg-memorial-100 text-memorial-800' : 'text-gray-600 hover:bg-gray-50'
+              tab === t.id ? 'bg-gold-100 text-memorial-900' : 'text-gray-600 hover:bg-gold-50'
             }`}
           >
             {t.label}

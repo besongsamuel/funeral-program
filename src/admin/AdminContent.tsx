@@ -99,7 +99,7 @@ export function AdminContent({ data, onChanged }: { data: MemorialContext; onCha
             key={item.id}
             onClick={() => setSection(item.id)}
             className={`rounded-full px-4 py-1.5 text-sm font-medium ${
-              section === item.id ? 'bg-memorial-700 text-white' : 'bg-memorial-50 text-memorial-800 hover:bg-memorial-100'
+              section === item.id ? 'bg-gold-400 text-memorial-950' : 'bg-gold-50 text-memorial-800 hover:bg-gold-100'
             }`}
           >
             {item.label}

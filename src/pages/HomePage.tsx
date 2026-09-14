@@ -42,7 +42,7 @@ export function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <p className="mb-4 text-sm uppercase tracking-[0.3em] text-memorial-200">
+            <p className="mb-4 text-sm uppercase tracking-[0.3em] text-gold-200">
               Celebrating a Life of Love &amp; Legacy
             </p>
 
@@ -50,39 +50,39 @@ export function HomePage() {
               <motion.img
                 src={memorial.portraitUrl}
                 alt={memorial.fullName}
-                className="mx-auto mb-8 h-40 w-40 rounded-full border-4 border-amber-100/50 object-cover object-top shadow-[0_0_40px_rgba(253,230,138,0.35)] sm:h-48 sm:w-48"
+                className="portrait-gold-ring mx-auto mb-8 h-40 w-40 rounded-full border-4 border-gold-400 object-cover object-top sm:h-48 sm:w-48"
                 initial={reduced ? false : { scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.6 }}
               />
             )}
 
-            <h1 className="font-serif text-4xl font-bold sm:text-5xl lg:text-6xl">
+            <h1 className="font-serif text-4xl font-bold text-gold-300 sm:text-5xl lg:text-6xl">
               {memorial.fullName}
             </h1>
             {memorial.maidenName && (
-              <p className="mt-2 text-lg italic text-memorial-200">née {memorial.maidenName}</p>
+              <p className="mt-2 text-lg italic text-gold-100">née {memorial.maidenName}</p>
             )}
-            <p className="mt-4 text-lg text-memorial-200 sm:text-xl">
+            <p className="mt-4 text-lg text-gold-100 sm:text-xl">
               Sunrise {formatDate(memorial.bornOn)} &nbsp;|&nbsp; Sunset {formatDate(memorial.diedOn)}
             </p>
-            <p className="mt-2 text-sm uppercase tracking-[0.2em] text-memorial-300">
+            <p className="mt-2 text-sm uppercase tracking-[0.2em] text-gold-300">
               90 Years of Grace, Love &amp; Legacy
             </p>
             {memorial.tagline && (
-              <p className="mx-auto mt-6 max-w-2xl text-lg italic text-memorial-100">
+              <p className="mx-auto mt-6 max-w-2xl text-lg italic text-gold-50">
                 &ldquo;{memorial.tagline}&rdquo;
               </p>
             )}
 
             <div className="mt-10 flex flex-wrap justify-center gap-4">
-              <Link to="/legacy" className="btn-primary bg-white text-memorial-800 hover:bg-memorial-50">
+              <Link to="/legacy" className="btn-primary">
                 <BookOpen className="h-4 w-4" /> View Their Story
               </Link>
-              <Link to="/funeral" className="btn-secondary border-white text-white hover:bg-white/10">
+              <Link to="/funeral" className="btn-secondary-dark">
                 <Calendar className="h-4 w-4" /> Funeral Program
               </Link>
-              <Link to="/tributes" className="btn-secondary border-white text-white hover:bg-white/10">
+              <Link to="/tributes" className="btn-secondary-dark">
                 <Heart className="h-4 w-4" /> Share a Memory
               </Link>
             </div>
@@ -94,7 +94,7 @@ export function HomePage() {
               animate={{ opacity: [0.6, 1, 0.6] }}
               transition={{ duration: 3, repeat: Infinity }}
             >
-              <Flame className="h-6 w-6 text-memorial-300" />
+              <Flame className="h-6 w-6 text-gold-400" />
             </motion.div>
           )}
         </div>

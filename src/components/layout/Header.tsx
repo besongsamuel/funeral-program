@@ -21,7 +21,7 @@ export function Header() {
   const firstName = data ? getFirstName(data.memorial.fullName) : '';
 
   return (
-    <header className="sticky top-0 z-40 border-b border-memorial-100 bg-white/90 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b-2 border-gold-400 bg-white/90 backdrop-blur-md">
       <div className="container-memorial flex h-16 items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2 text-memorial-800">
           <Bird className="h-6 w-6" />
@@ -38,8 +38,8 @@ export function Header() {
               className={({ isActive }) =>
                 `rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-memorial-100 text-memorial-800'
-                    : 'text-gray-600 hover:bg-memorial-50 hover:text-memorial-700'
+                    ? 'bg-gold-100 text-memorial-900'
+                    : 'text-gray-600 hover:bg-gold-50 hover:text-memorial-800'
                 }`
               }
             >
@@ -63,7 +63,7 @@ export function Header() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-t border-memorial-100 bg-white lg:hidden"
+            className="overflow-hidden border-t border-gold-200 bg-white lg:hidden"
           >
             <div className="flex flex-col p-4">
               {navItems.map((item) => (
@@ -73,7 +73,7 @@ export function Header() {
                   onClick={() => setOpen(false)}
                   className={({ isActive }) =>
                     `rounded-xl px-4 py-3 text-sm font-medium ${
-                      isActive ? 'bg-memorial-100 text-memorial-800' : 'text-gray-600'
+                      isActive ? 'bg-gold-100 text-memorial-900' : 'text-gray-600'
                     }`
                   }
                 >

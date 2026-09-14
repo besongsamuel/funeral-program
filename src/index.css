@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import './theme.css';
 
 @tailwind base;
 @tailwind components;
@@ -10,7 +11,7 @@
   }
 
   body {
-    @apply bg-white text-gray-800 font-sans antialiased;
+    @apply bg-cream text-gray-800 font-sans antialiased;
   }
 
   h1, h2, h3, h4 {
@@ -20,15 +21,19 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full bg-memorial-700 px-6 py-3 text-sm font-medium text-white transition-all hover:bg-memorial-800 hover:shadow-lg active:scale-95;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-gold-400 px-6 py-3 text-sm font-medium text-memorial-950 transition-all hover:bg-gold-500 hover:shadow-lg active:scale-95;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-memorial-700 px-6 py-3 text-sm font-medium text-memorial-700 transition-all hover:bg-memorial-50 active:scale-95;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-gold-500 px-6 py-3 text-sm font-medium text-memorial-800 transition-all hover:bg-gold-50 active:scale-95;
+  }
+
+  .btn-secondary-dark {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-gold-400 px-6 py-3 text-sm font-medium text-gold-100 transition-all hover:bg-gold-400/15 active:scale-95;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-memorial-700 transition-all hover:bg-memorial-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-memorial-700 transition-all hover:bg-gold-50;
   }
 
   .section-padding {
@@ -39,12 +44,22 @@
     @apply mx-auto max-w-6xl;
   }
 
+  .page-banner {
+    @apply bg-memorial-900 py-16 text-white;
+    box-shadow: inset 0 -3px 0 rgb(var(--color-gold-400));
+  }
+
+  .page-banner-compact {
+    @apply bg-memorial-900 py-12 text-white;
+    box-shadow: inset 0 -3px 0 rgb(var(--color-gold-400));
+  }
+
   .card {
-    @apply rounded-2xl border border-memorial-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md;
+    @apply rounded-2xl border border-gold-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md;
   }
 
   .input-field {
-    @apply w-full rounded-xl border border-memorial-200 bg-white px-4 py-3 text-sm outline-none transition-colors focus:border-memorial-500 focus:ring-2 focus:ring-memorial-200;
+    @apply w-full rounded-xl border border-gold-200 bg-white px-4 py-3 text-sm outline-none transition-colors focus:border-gold-500 focus:ring-2 focus:ring-gold-200;
   }
 
   .label {
@@ -52,8 +67,26 @@
   }
 
   .hero-beam {
-    background: linear-gradient(to bottom, rgba(255, 247, 237, 0.18), rgba(253, 224, 171, 0.08), transparent);
+    background: linear-gradient(
+      to bottom,
+      rgb(var(--color-gold-100) / 0.22),
+      rgb(var(--color-gold-400) / 0.1),
+      transparent
+    );
     filter: blur(18px);
+  }
+
+  .hero-radial {
+    background: radial-gradient(
+      ellipse at 50% 38%,
+      rgb(var(--color-purple-500) / 0.45) 0%,
+      rgb(var(--color-purple-950) / 0.2) 46%,
+      transparent 72%
+    );
+  }
+
+  .portrait-gold-ring {
+    box-shadow: 0 0 40px rgb(var(--color-gold-400) / 0.45);
   }
 }
 

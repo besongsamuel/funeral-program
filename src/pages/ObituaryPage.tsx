@@ -10,10 +10,10 @@ export function ObituaryPage() {
 
   return (
     <div className="print-content">
-      <section className="bg-memorial-900 py-12 text-white no-print">
+      <section className="page-banner-compact no-print">
         <div className="container-memorial px-4 text-center">
           <h1 className="font-serif text-3xl font-bold">Obituary</h1>
-          <button onClick={() => window.print()} className="btn-secondary mt-4 border-white text-white">
+          <button onClick={() => window.print()} className="btn-secondary-dark mt-4">
             <Printer className="h-4 w-4" /> Print
           </button>
         </div>

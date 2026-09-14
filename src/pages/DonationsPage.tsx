@@ -14,7 +14,7 @@ export function DonationsPage() {
 
   return (
     <div>
-      <section className="bg-memorial-900 py-16 text-white">
+      <section className="page-banner">
         <div className="container-memorial px-4 text-center">
           <h1 className="font-serif text-4xl font-bold">In Their Memory</h1>
           <p className="mt-3 text-memorial-200">Honor their legacy through giving</p>
