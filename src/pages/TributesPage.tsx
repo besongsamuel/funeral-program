@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useMemorial } from '@/hooks/useMemorial';
 import { SectionHeading } from '@/components/ui/SectionHeading';
+import { FormattedText } from '@/components/ui/FormattedText';
 import { submitTribute, submitStory } from '@/lib/data-service';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { Heart, BookOpen, CheckCircle } from 'lucide-react';
@@ -154,7 +155,10 @@ export function TributesPage() {
                 </div>
                 <div>
                   <label className="label">Your Story</label>
-                  <textarea {...storyForm.register('body', { required: true })} rows={6} className="input-field" />
+                  <textarea {...storyForm.register('body', { required: true })} rows={8} className="input-field" />
+                  <p className="mt-1.5 text-xs text-gray-500">
+                    Tip: use *bold* and _italics_. Blank lines start a new paragraph.
+                  </p>
                 </div>
                 <button type="submit" className="btn-primary w-full">Submit Story</button>
               </form>
@@ -203,7 +207,14 @@ export function TributesPage() {
                 )}
                 <div>
                   <label className="label">Message</label>
-                  <textarea {...tributeForm.register('message', { required: true })} rows={4} className="input-field" />
+                  <textarea
+                    {...tributeForm.register('message', { required: true })}
+                    rows={tab === 'guestbook' ? 4 : 10}
+                    className="input-field"
+                  />
+                  <p className="mt-1.5 text-xs text-gray-500">
+                    Tip: use *bold* and _italics_. Blank lines start a new paragraph.
+                  </p>
                 </div>
                 <button type="submit" className="btn-primary w-full">Submit Message</button>
                 <p className="text-xs text-gray-500 text-center">Messages are reviewed by the family before publication.</p>
@@ -217,21 +228,24 @@ export function TributesPage() {
         <div className="container-memorial">
           <SectionHeading title="Messages" subtitle={`Shared in honour of ${memorial.fullName}`} />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {[...tributes, ...guestbook].map((t, i) => (
-              <motion.div
-                key={t.id}
-                initial={reduced ? false : { opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                className="card"
-              >
-                <p className="text-gray-700">{t.message}</p>
-                <p className="mt-3 text-sm font-medium text-memorial-700">
-                  — {t.authorName}{t.relationship ? `, ${t.relationship}` : ''}
-                </p>
-              </motion.div>
-            ))}
+            {[...tributes, ...guestbook].map((t, i) => {
+              const isLong = t.message.length > 320 || t.message.includes('\n');
+              return (
+                <motion.div
+                  key={t.id}
+                  initial={reduced ? false : { opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.05 }}
+                  className={`card ${isLong ? 'sm:col-span-2 lg:col-span-3' : ''}`}
+                >
+                  <FormattedText text={t.message} className="leading-relaxed text-gray-700" />
+                  <p className="mt-3 text-sm font-medium text-memorial-700">
+                    — {t.authorName}{t.relationship ? `, ${t.relationship}` : ''}
+                  </p>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>

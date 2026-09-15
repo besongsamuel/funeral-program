@@ -1,5 +1,6 @@
 import { useMemorial } from '@/hooks/useMemorial';
 import { SectionHeading } from '@/components/ui/SectionHeading';
+import { FormattedText } from '@/components/ui/FormattedText';
 import { motion } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { Music } from 'lucide-react';
@@ -39,7 +40,7 @@ export function MemoriesPage() {
                 >
                   <h3 className="font-serif text-xl font-semibold text-memorial-900">{story.title}</h3>
                   <p className="mt-1 text-sm text-memorial-600">by {story.authorName}</p>
-                  <p className="mt-4 leading-relaxed text-gray-700">{story.body}</p>
+                  <FormattedText text={story.body} className="mt-4 leading-relaxed text-gray-700" />
                 </motion.article>
               ))}
             </div>

@@ -15,6 +15,7 @@ import { demoContext } from '@/lib/demo-data';
 import { exportSubmissionsCsv } from '@/lib/export-submissions-csv';
 import { AdminContent } from './AdminContent';
 import { AdminAi, AdminProfile } from './AdminSettings';
+import { FormattedText } from '@/components/ui/FormattedText';
 import { Download } from 'lucide-react';
 
 type Tab = 'profile' | 'content' | 'moderation' | 'photos' | 'ai' | 'publish';
@@ -200,7 +201,7 @@ export function AdminDashboard() {
                     Tribute from {t.authorName}
                     {t.isGuestbookSignature ? ' (guestbook)' : ''}
                   </p>
-                  <p className="mt-2 text-gray-700">{t.message}</p>
+                  <FormattedText text={t.message} className="mt-2 text-gray-700" />
                   <div className="mt-4 flex flex-wrap gap-2">
                     <button onClick={() => handleModerate('tribute', t.id, 'approved')} className="btn-primary text-xs">Approve</button>
                     <button onClick={() => handleModerate('tribute', t.id, 'rejected')} className="btn-ghost text-xs text-red-600">Reject</button>
@@ -211,7 +212,7 @@ export function AdminDashboard() {
               {data.pendingStories.map((s) => (
                 <div key={s.id} className="card">
                   <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}</p>
-                  <p className="mt-2 text-gray-700">{s.body}</p>
+                  <FormattedText text={s.body} className="mt-2 text-gray-700" />
                   <div className="mt-4 flex flex-wrap gap-2">
                     <button onClick={() => handleModerate('story', s.id, 'approved')} className="btn-primary text-xs">Approve</button>
                     <button onClick={() => handleModerate('story', s.id, 'rejected')} className="btn-ghost text-xs text-red-600">Reject</button>
@@ -233,7 +234,7 @@ export function AdminDashboard() {
                     {t.relationship ? ` · ${t.relationship}` : ''}
                     {t.isGuestbookSignature ? ' (guestbook)' : ''}
                   </p>
-                  <p className="mt-2 text-gray-700">{t.message}</p>
+                  <FormattedText text={t.message} className="mt-2 text-gray-700" />
                   <div className="mt-4">
                     <button onClick={() => handleDelete('tribute', t.id, 'tribute')} className="btn-ghost text-xs text-red-600">Delete</button>
                   </div>
@@ -242,7 +243,7 @@ export function AdminDashboard() {
               {approvedStories.map((s) => (
                 <div key={s.id} className="card">
                   <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}</p>
-                  <p className="mt-2 text-gray-700">{s.body}</p>
+                  <FormattedText text={s.body} className="mt-2 text-gray-700" />
                   <div className="mt-4">
                     <button onClick={() => handleDelete('story', s.id, 'story')} className="btn-ghost text-xs text-red-600">Delete</button>
                   </div>
@@ -256,7 +257,7 @@ export function AdminDashboard() {
                 {rejectedTributes.map((t) => (
                   <div key={t.id} className="card opacity-80">
                     <p className="text-sm font-medium text-memorial-700">Tribute from {t.authorName}</p>
-                    <p className="mt-2 text-gray-700">{t.message}</p>
+                    <FormattedText text={t.message} className="mt-2 text-gray-700" />
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button onClick={() => handleModerate('tribute', t.id, 'approved')} className="btn-primary text-xs">Approve</button>
                       <button onClick={() => handleModerate('tribute', t.id, 'pending')} className="btn-secondary text-xs">Unreject</button>
@@ -267,7 +268,7 @@ export function AdminDashboard() {
                 {rejectedStories.map((s) => (
                   <div key={s.id} className="card opacity-80">
                     <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}</p>
-                    <p className="mt-2 text-gray-700">{s.body}</p>
+                    <FormattedText text={s.body} className="mt-2 text-gray-700" />
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button onClick={() => handleModerate('story', s.id, 'approved')} className="btn-primary text-xs">Approve</button>
                       <button onClick={() => handleModerate('story', s.id, 'pending')} className="btn-secondary text-xs">Unreject</button>
@@ -284,7 +285,7 @@ export function AdminDashboard() {
                 {deletedTributes.map((t) => (
                   <div key={t.id} className="card opacity-80">
                     <p className="text-sm font-medium text-memorial-700">Tribute from {t.authorName}</p>
-                    <p className="mt-2 text-gray-700">{t.message}</p>
+                    <FormattedText text={t.message} className="mt-2 text-gray-700" />
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button onClick={() => handleModerate('tribute', t.id, 'approved')} className="btn-primary text-xs">Approve</button>
                       <button onClick={() => handleModerate('tribute', t.id, 'pending')} className="btn-secondary text-xs">Undelete</button>
@@ -294,7 +295,7 @@ export function AdminDashboard() {
                 {deletedStories.map((s) => (
                   <div key={s.id} className="card opacity-80">
                     <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}</p>
-                    <p className="mt-2 text-gray-700">{s.body}</p>
+                    <FormattedText text={s.body} className="mt-2 text-gray-700" />
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button onClick={() => handleModerate('story', s.id, 'approved')} className="btn-primary text-xs">Approve</button>
                       <button onClick={() => handleModerate('story', s.id, 'pending')} className="btn-secondary text-xs">Undelete</button>

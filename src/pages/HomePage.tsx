@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { BookOpen, Calendar, Heart, Flame } from 'lucide-react';
 import { useMemorial } from '@/hooks/useMemorial';
 import { SectionHeading } from '@/components/ui/SectionHeading';
+import { FormattedText } from '@/components/ui/FormattedText';
 import { Countdown } from '@/components/ui/Countdown';
 import { formatDate } from '@/lib/utils';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -167,7 +168,7 @@ export function HomePage() {
               viewport={{ once: true }}
               className="card mx-auto max-w-2xl text-center"
             >
-              <p className="text-lg italic text-gray-700">&ldquo;{featuredTribute.message}&rdquo;</p>
+              <FormattedText text={featuredTribute.message} className="text-lg italic text-gray-700" />
               <footer className="mt-4 text-sm font-medium text-memorial-700">
                 — {featuredTribute.authorName}{featuredTribute.relationship ? `, ${featuredTribute.relationship}` : ''}
               </footer>
@@ -191,7 +192,7 @@ export function HomePage() {
                 transition={{ delay: i * 0.1 }}
                 className="card"
               >
-                <p className="text-sm text-gray-700">{t.message}</p>
+                <FormattedText text={t.message} className="text-sm text-gray-700" />
                 <p className="mt-3 text-xs font-medium text-memorial-600">— {t.authorName}</p>
               </motion.div>
             ))}
