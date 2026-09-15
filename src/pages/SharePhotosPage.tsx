@@ -15,8 +15,11 @@ const ALBUM_CATEGORIES = [
   'funeral',
 ] as const;
 
+const NEW_ALBUM = '__new__';
+
 interface SharePhotosForm {
   authorName: string;
+  albumChoice: string;
   albumName: string;
   category: string;
 }
@@ -30,9 +33,28 @@ export function SharePhotosPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  const albums = data?.galleryAlbums ?? [];
+  const defaultAlbumChoice = albums[0]?.id ?? NEW_ALBUM;
+
   const form = useForm<SharePhotosForm>({
-    defaultValues: { authorName: '', albumName: '', category: 'family' },
+    defaultValues: {
+      authorName: '',
+      albumChoice: defaultAlbumChoice,
+      albumName: '',
+      category: 'family',
+    },
   });
+
+  const albumChoice = form.watch('albumChoice');
+  const creatingNewAlbum = albumChoice === NEW_ALBUM;
+
+  useEffect(() => {
+    if (!data) return;
+    const nextDefault = data.galleryAlbums[0]?.id ?? NEW_ALBUM;
+    if (!form.getValues('albumChoice')) {
+      form.setValue('albumChoice', nextDefault);
+    }
+  }, [data, form]);
 
   const previews = useMemo(
     () =>
@@ -88,14 +110,21 @@ export function SharePhotosPage() {
     setSubmitting(true);
     setError('');
     try {
+      const creating = values.albumChoice === NEW_ALBUM;
       await submitGalleryPhotos({
         authorName: values.authorName,
-        albumName: values.albumName,
-        category: values.category,
+        albumId: creating ? undefined : values.albumChoice,
+        albumName: creating ? values.albumName : undefined,
+        category: creating ? values.category : undefined,
         files,
       });
       setSubmitted(true);
-      form.reset({ authorName: '', albumName: '', category: 'family' });
+      form.reset({
+        authorName: '',
+        albumChoice: albums[0]?.id ?? NEW_ALBUM,
+        albumName: '',
+        category: 'family',
+      });
       setFiles([]);
       if (fileInputRef.current) fileInputRef.current.value = '';
       await queryClient.invalidateQueries({ queryKey: ['memorial'] });
@@ -147,16 +176,18 @@ export function SharePhotosPage() {
                     Upload photos
                   </h2>
                   <p className="mt-2 text-sm leading-relaxed text-gray-600">
-                    Choose one or more images from your phone or computer. Everything you share stays
-                    private until the family approves it for the public gallery.
+                    Choose an existing album or create a new one, then add one or more images from
+                    your phone or computer. Photos stay private until the family approves them.
                   </p>
                 </div>
 
                 <div>
-                  <label className="label" htmlFor="share-author">Your name</label>
+                  <label className="label" htmlFor="share-author">
+                    Your name <span className="font-normal text-gray-500">(optional)</span>
+                  </label>
                   <input
                     id="share-author"
-                    {...form.register('authorName', { required: true })}
+                    {...form.register('authorName')}
                     className="input-field min-h-12 text-base"
                     autoComplete="name"
                     enterKeyHint="next"
@@ -165,30 +196,53 @@ export function SharePhotosPage() {
                 </div>
 
                 <div>
-                  <label className="label" htmlFor="share-album">Album name</label>
-                  <input
-                    id="share-album"
-                    {...form.register('albumName', { required: true })}
-                    className="input-field min-h-12 text-base"
-                    enterKeyHint="next"
-                    placeholder="e.g. Family reunion, Wedding day"
-                  />
-                </div>
-
-                <div>
-                  <label className="label" htmlFor="share-category">Category</label>
+                  <label className="label" htmlFor="share-album-choice">Album</label>
                   <select
-                    id="share-category"
-                    {...form.register('category', { required: true })}
-                    className="input-field min-h-12 text-base capitalize"
+                    id="share-album-choice"
+                    {...form.register('albumChoice', { required: true })}
+                    className="input-field min-h-12 text-base"
                   >
-                    {ALBUM_CATEGORIES.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
+                    {albums.map((album) => (
+                      <option key={album.id} value={album.id}>
+                        {album.name}
                       </option>
                     ))}
+                    <option value={NEW_ALBUM}>Create a new album…</option>
                   </select>
                 </div>
+
+                {creatingNewAlbum && (
+                  <>
+                    <div>
+                      <label className="label" htmlFor="share-album">New album name</label>
+                      <input
+                        id="share-album"
+                        {...form.register('albumName', { required: creatingNewAlbum })}
+                        className="input-field min-h-12 text-base"
+                        enterKeyHint="next"
+                        placeholder="e.g. Family reunion, Wedding day"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="label" htmlFor="share-category">Category</label>
+                      <select
+                        id="share-category"
+                        {...form.register('category', { required: creatingNewAlbum })}
+                        className="input-field min-h-12 text-base capitalize"
+                      >
+                        {ALBUM_CATEGORIES.map((category) => (
+                          <option key={category} value={category}>
+                            {category}
+                          </option>
+                        ))}
+                      </select>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Only needed when creating a new album.
+                      </p>
+                    </div>
+                  </>
+                )}
 
                 <div>
                   <p className="label">Photos</p>

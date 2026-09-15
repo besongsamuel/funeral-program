@@ -23,10 +23,9 @@ function isPublicPhoto(photo: GalleryPhoto) {
 
 function demoMemorial() {
   const approvedPhotos = localPhotos.filter(isPublicPhoto);
-  const albumIds = new Set(approvedPhotos.map((p) => p.albumId));
   return {
     ...demoContext,
-    galleryAlbums: localAlbums.filter((a) => albumIds.has(a.id)),
+    galleryAlbums: localAlbums,
     galleryPhotos: approvedPhotos,
     tributes: localTributes.filter((t) => t.status === 'approved'),
     stories: localStories.filter((s) => s.status === 'approved'),
@@ -134,7 +133,6 @@ async function loadFromAmplify(client: any, slug: string): Promise<MemorialConte
   const approvedPhotos = sortByOrder(
     (galleryPhotos as GalleryPhoto[]).filter(isPublicPhoto),
   );
-  const approvedAlbumIds = new Set(approvedPhotos.map((p) => p.albumId));
 
   return {
     memorial: memorial as Memorial,
@@ -143,7 +141,7 @@ async function loadFromAmplify(client: any, slug: string): Promise<MemorialConte
     familyMembers: sortByOrder(familyMembers as MemorialContext['familyMembers']),
     funeralEvents: sortByStart(funeralEvents as MemorialContext['funeralEvents']),
     programItems: sortByOrder(programItems as MemorialContext['programItems']),
-    galleryAlbums: sortByOrder(galleryAlbums as GalleryAlbum[]).filter((a) => approvedAlbumIds.has(a.id)),
+    galleryAlbums: sortByOrder(galleryAlbums as GalleryAlbum[]),
     galleryPhotos: approvedPhotos,
     tributes: tributes as Tribute[],
     stories: stories as Story[],
@@ -217,65 +215,69 @@ export async function submitStory(input: {
 }
 
 export async function submitGalleryPhotos(input: {
-  authorName: string;
-  albumName: string;
-  category: string;
+  authorName?: string;
+  albumId?: string;
+  albumName?: string;
+  category?: string;
   files: FileList | File[];
 }): Promise<GalleryPhoto[]> {
   const files = Array.from(input.files);
   if (!files.length) throw new Error('Please choose at least one image.');
 
   const client = getPublicClient();
-  const albumName = input.albumName.trim();
-  const authorName = input.authorName.trim();
-  if (!authorName) throw new Error('Please enter your name.');
-  if (!albumName) throw new Error('Please enter an album name.');
-  if (!input.category) throw new Error('Please choose a category.');
+  const authorName = input.authorName?.trim() ?? '';
 
-  if (!client) {
-    let album = localAlbums.find(
+  const resolveAlbum = async (): Promise<GalleryAlbum> => {
+    if (input.albumId) {
+      if (!client) {
+        const local = localAlbums.find((a) => a.id === input.albumId);
+        if (!local) throw new Error('Please choose a valid album.');
+        return local;
+      }
+      const { data, errors } = await client.models.GalleryAlbum.get(
+        { id: input.albumId },
+        { authMode: 'apiKey' },
+      );
+      if (errors?.length || !data) {
+        throw new Error(errors?.[0]?.message ?? 'Please choose a valid album.');
+      }
+      return data as GalleryAlbum;
+    }
+
+    const albumName = input.albumName?.trim() ?? '';
+    if (!albumName) throw new Error('Please enter an album name.');
+    if (!input.category) throw new Error('Please choose a category for the new album.');
+
+    if (!client) {
+      let album = localAlbums.find(
+        (a) =>
+          a.name.toLowerCase() === albumName.toLowerCase() &&
+          a.category === input.category,
+      );
+      if (!album) {
+        album = {
+          id: `alb-${Date.now()}`,
+          memorialId: MEMORIAL_ID,
+          name: albumName,
+          category: input.category,
+          sortOrder: localAlbums.length + 1,
+        };
+        localAlbums = [...localAlbums, album];
+      }
+      return album;
+    }
+
+    const { data: existingAlbums } = await client.models.GalleryAlbum.list({
+      filter: { memorialId: { eq: MEMORIAL_ID } },
+      authMode: 'apiKey',
+    });
+    const match = ((existingAlbums ?? []) as GalleryAlbum[]).find(
       (a) =>
         a.name.toLowerCase() === albumName.toLowerCase() &&
         a.category === input.category,
     );
-    if (!album) {
-      album = {
-        id: `alb-${Date.now()}`,
-        memorialId: MEMORIAL_ID,
-        name: albumName,
-        category: input.category,
-        sortOrder: localAlbums.length + 1,
-      };
-      localAlbums = [...localAlbums, album];
-    }
+    if (match) return match;
 
-    const created: GalleryPhoto[] = files.map((file, index) => ({
-      id: `gp-${Date.now()}-${index}`,
-      memorialId: MEMORIAL_ID,
-      albumId: album!.id,
-      url: URL.createObjectURL(file),
-      caption: file.name,
-      authorName,
-      status: 'pending' as const,
-      sortOrder: index + 1,
-    }));
-    localPhotos = [...created, ...localPhotos];
-    return created;
-  }
-
-  const uploaded = await uploadGuestGalleryImages(files, MEMORIAL_ID);
-
-  const { data: existingAlbums } = await client.models.GalleryAlbum.list({
-    filter: { memorialId: { eq: MEMORIAL_ID } },
-    authMode: 'apiKey',
-  });
-  let album = ((existingAlbums ?? []) as GalleryAlbum[]).find(
-    (a) =>
-      a.name.toLowerCase() === albumName.toLowerCase() &&
-      a.category === input.category,
-  );
-
-  if (!album) {
     const { data: createdAlbum, errors } = await client.models.GalleryAlbum.create({
       memorialId: MEMORIAL_ID,
       name: albumName,
@@ -285,9 +287,27 @@ export async function submitGalleryPhotos(input: {
     if (errors?.length || !createdAlbum) {
       throw new Error(errors?.[0]?.message ?? 'Could not create album.');
     }
-    album = createdAlbum as GalleryAlbum;
+    return createdAlbum as GalleryAlbum;
+  };
+
+  const album = await resolveAlbum();
+
+  if (!client) {
+    const created: GalleryPhoto[] = files.map((file, index) => ({
+      id: `gp-${Date.now()}-${index}`,
+      memorialId: MEMORIAL_ID,
+      albumId: album.id,
+      url: URL.createObjectURL(file),
+      caption: file.name,
+      authorName: authorName || undefined,
+      status: 'pending' as const,
+      sortOrder: index + 1,
+    }));
+    localPhotos = [...created, ...localPhotos];
+    return created;
   }
 
+  const uploaded = await uploadGuestGalleryImages(files, MEMORIAL_ID);
   const created: GalleryPhoto[] = [];
   for (const [index, item] of uploaded.entries()) {
     const { data, errors } = await client.models.GalleryPhoto.create({
@@ -295,7 +315,7 @@ export async function submitGalleryPhotos(input: {
       albumId: album.id,
       url: item.url,
       caption: item.fileName,
-      authorName,
+      authorName: authorName || undefined,
       status: 'pending',
       sortOrder: index + 1,
     });
