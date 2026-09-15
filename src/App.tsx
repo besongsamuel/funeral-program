@@ -6,6 +6,7 @@ import { ObituaryPage } from '@/pages/ObituaryPage';
 import { FuneralPage } from '@/pages/FuneralPage';
 import { LivestreamPage } from '@/pages/LivestreamPage';
 import { GalleryPage } from '@/pages/GalleryPage';
+import { SharePhotosPage } from '@/pages/SharePhotosPage';
 import { MemoriesPage } from '@/pages/MemoriesPage';
 import { TributesPage } from '@/pages/TributesPage';
 import { FamilyPage } from '@/pages/FamilyPage';
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="funeral" element={<FuneralPage />} />
           <Route path="funeral/livestream" element={<LivestreamPage />} />
           <Route path="gallery" element={<GalleryPage />} />
+          <Route path="share-photos" element={<SharePhotosPage />} />
           <Route path="memories" element={<MemoriesPage />} />
           <Route path="tributes" element={<TributesPage />} />
           <Route path="family" element={<FamilyPage />} />

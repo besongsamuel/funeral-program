@@ -10,6 +10,7 @@ const navItems = [
   { to: '/legacy', label: 'Legacy' },
   { to: '/funeral', label: 'Funeral' },
   { to: '/gallery', label: 'Gallery' },
+  { to: '/share-photos', label: 'Share Photos' },
   { to: '/memories', label: 'Memories' },
   { to: '/tributes', label: 'Tributes' },
   { to: '/family', label: 'Family' },

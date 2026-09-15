@@ -88,6 +88,8 @@ export interface GalleryPhoto {
   albumId: string;
   url: string;
   caption?: string;
+  authorName?: string;
+  status: ContentStatus;
   sortOrder: number;
 }
 

@@ -327,6 +327,7 @@ export function AdminContent({ data, onChanged }: { data: MemorialContext; onCha
                             albumId: album.id,
                             url: '',
                             caption: '',
+                            status: 'approved',
                             sortOrder: albumPhotos.length + items.filter((photo) => photo.albumId === album.id).length + 1,
                           },
                         ])
@@ -705,6 +706,7 @@ function AlbumPhotoUploader({
           albumId,
           url: item.url,
           caption: '',
+          status: 'approved',
           sortOrder: nextSortOrder + index,
         });
         saved += 1;
@@ -813,7 +815,7 @@ function PhotoForm({ item, onChanged }: { item: GalleryPhoto; onChanged: () => P
 
   return (
     <form className="card space-y-3" onSubmit={(event) => form.submit(event, async (values) => {
-      await adminSave('GalleryPhoto', values);
+      await adminSave('GalleryPhoto', { ...values, status: values.status ?? 'approved' });
       await onChanged();
     })}>
       <Field label="Image URL">

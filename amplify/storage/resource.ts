@@ -11,5 +11,9 @@ export const storage = defineStorage({
       allow.guest.to(['read', 'write']),
       allow.groups(['MemorialAdmin']).to(['read', 'write', 'delete']),
     ],
+    'gallery-uploads/*': [
+      allow.guest.to(['read', 'write']),
+      allow.groups(['MemorialAdmin']).to(['read', 'write', 'delete']),
+    ],
   }),
 });

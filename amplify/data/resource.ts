@@ -108,7 +108,12 @@ const schema = a.schema({
       sortOrder: a.integer().default(0),
     })
     .secondaryIndexes((index) => [index('memorialId').sortKeys(['sortOrder'])])
-    .authorization((allow) => publicReadAdminWrite(allow)),
+    .authorization((allow) => [
+      allow.publicApiKey().to(['read', 'create']),
+      allow.guest().to(['read', 'create']),
+      allow.authenticated().to([...ADMIN_WRITE]),
+      allow.groups(['MemorialAdmin']).to([...ADMIN_WRITE]),
+    ]),
 
   GalleryPhoto: a
     .model({
@@ -116,13 +121,20 @@ const schema = a.schema({
       albumId: a.id().required(),
       url: a.string().required(),
       caption: a.string(),
+      authorName: a.string(),
+      status: a.enum(['pending', 'approved', 'rejected']),
       sortOrder: a.integer().default(0),
     })
     .secondaryIndexes((index) => [
       index('memorialId').sortKeys(['sortOrder']),
       index('albumId').sortKeys(['sortOrder']),
     ])
-    .authorization((allow) => publicReadAdminWrite(allow)),
+    .authorization((allow) => [
+      allow.publicApiKey().to(['read', 'create']),
+      allow.guest().to(['read', 'create']),
+      allow.authenticated().to([...ADMIN_WRITE]),
+      allow.groups(['MemorialAdmin']).to([...ADMIN_WRITE]),
+    ]),
 
   Tribute: a
     .model({

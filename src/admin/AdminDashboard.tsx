@@ -4,18 +4,20 @@ import {
   getAdminContext,
   updateTributeStatus,
   updateStoryStatus,
+  updateGalleryPhotoStatus,
   deleteTribute,
   deleteStory,
+  deleteGalleryPhoto,
   updateMemorial,
 } from '@/lib/data-service';
-import type { ContentStatus } from '@/lib/types';
+import type { ContentStatus, GalleryPhoto } from '@/lib/types';
 import { demoContext } from '@/lib/demo-data';
 import { exportSubmissionsCsv } from '@/lib/export-submissions-csv';
 import { AdminContent } from './AdminContent';
 import { AdminAi, AdminProfile } from './AdminSettings';
 import { Download } from 'lucide-react';
 
-type Tab = 'profile' | 'content' | 'moderation' | 'ai' | 'publish';
+type Tab = 'profile' | 'content' | 'moderation' | 'photos' | 'ai' | 'publish';
 type ModeratedType = 'tribute' | 'story';
 
 export function AdminDashboard() {
@@ -49,23 +51,88 @@ export function AdminDashboard() {
     await refresh();
   };
 
+  const handlePhotoStatus = async (id: string, status: ContentStatus) => {
+    await updateGalleryPhotoStatus(id, status);
+    await refresh();
+  };
+
+  const handlePhotoDelete = async (id: string) => {
+    if (!confirm('Delete this photo? This cannot be undone.')) return;
+    await deleteGalleryPhoto(id);
+    await refresh();
+  };
+
   const handleExportCsv = () => {
     exportSubmissionsCsv(data.tributes, data.stories, data.memorial.slug);
   };
+
+  const albumName = (photo: GalleryPhoto) =>
+    data.galleryAlbums.find((album) => album.id === photo.albumId)?.name ?? 'Unknown album';
+
+  const albumCategory = (photo: GalleryPhoto) =>
+    data.galleryAlbums.find((album) => album.id === photo.albumId)?.category ?? '';
 
   const approvedTributes = data.tributes.filter((t) => t.status === 'approved');
   const approvedStories = data.stories.filter((s) => s.status === 'approved');
   const rejectedTributes = data.tributes.filter((t) => t.status === 'rejected');
   const rejectedStories = data.stories.filter((s) => s.status === 'rejected');
+  const approvedPhotos = data.galleryPhotos.filter((p) => p.status === 'approved');
+  const rejectedPhotos = data.galleryPhotos.filter((p) => p.status === 'rejected');
   const submissionCount = data.tributes.length + data.stories.length;
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'profile', label: 'Profile' },
     { id: 'content', label: 'Content' },
     { id: 'moderation', label: 'Moderation' },
+    { id: 'photos', label: 'Photos' },
     { id: 'ai', label: 'AI Assistant' },
     { id: 'publish', label: 'Publish' },
   ];
+
+  const renderPhotoCard = (
+    photo: GalleryPhoto,
+    actions: 'pending' | 'published' | 'rejected',
+  ) => (
+    <div key={photo.id} className={`card ${actions === 'rejected' ? 'opacity-80' : ''}`}>
+      <div className="flex flex-col gap-4 sm:flex-row">
+        <img
+          src={photo.url}
+          alt={photo.caption ?? 'Submitted photo'}
+          className="h-40 w-full rounded-xl object-cover sm:h-28 sm:w-28 sm:shrink-0"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-memorial-700">
+            {photo.authorName ? `From ${photo.authorName}` : 'Guest submission'}
+          </p>
+          <p className="mt-1 text-sm text-gray-600">
+            {albumName(photo)}
+            {albumCategory(photo) ? ` · ${albumCategory(photo)}` : ''}
+          </p>
+          {photo.caption && <p className="mt-2 text-sm text-gray-700">{photo.caption}</p>}
+          <div className="mt-4 flex flex-wrap gap-2">
+            {actions === 'pending' && (
+              <>
+                <button onClick={() => handlePhotoStatus(photo.id, 'approved')} className="btn-primary text-xs">
+                  Approve
+                </button>
+                <button onClick={() => handlePhotoStatus(photo.id, 'rejected')} className="btn-ghost text-xs text-red-600">
+                  Reject
+                </button>
+              </>
+            )}
+            {actions === 'rejected' && (
+              <button onClick={() => handlePhotoStatus(photo.id, 'approved')} className="btn-primary text-xs">
+                Approve
+              </button>
+            )}
+            <button onClick={() => handlePhotoDelete(photo.id)} className="btn-ghost text-xs text-red-600">
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex min-h-[calc(100vh-65px)]">
@@ -79,6 +146,9 @@ export function AdminDashboard() {
             }`}
           >
             {t.label}
+            {t.id === 'photos' && data.pendingPhotos.length > 0
+              ? ` (${data.pendingPhotos.length})`
+              : ''}
           </button>
         ))}
       </nav>
@@ -192,6 +262,42 @@ export function AdminDashboard() {
                     </div>
                   </div>
                 ))}
+              </section>
+            )}
+          </div>
+        )}
+
+        {tab === 'photos' && (
+          <div className="space-y-10">
+            <div>
+              <h2 className="font-serif text-2xl font-semibold">Photo moderation</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Guest uploads stay hidden until approved. {data.pendingPhotos.length} pending.
+              </p>
+            </div>
+
+            <section className="space-y-6">
+              <h3 className="font-serif text-xl font-semibold">Pending</h3>
+              {data.pendingPhotos.length === 0 ? (
+                <p className="text-gray-500">No pending photos.</p>
+              ) : (
+                data.pendingPhotos.map((photo) => renderPhotoCard(photo, 'pending'))
+              )}
+            </section>
+
+            <section className="space-y-6">
+              <h3 className="font-serif text-xl font-semibold">Published</h3>
+              {approvedPhotos.length === 0 ? (
+                <p className="text-gray-500">No published photos.</p>
+              ) : (
+                approvedPhotos.map((photo) => renderPhotoCard(photo, 'published'))
+              )}
+            </section>
+
+            {rejectedPhotos.length > 0 && (
+              <section className="space-y-6">
+                <h3 className="font-serif text-xl font-semibold">Rejected</h3>
+                {rejectedPhotos.map((photo) => renderPhotoCard(photo, 'rejected'))}
               </section>
             )}
           </div>

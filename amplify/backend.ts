@@ -31,7 +31,10 @@ mediaBucket.addToResourcePolicy(
     effect: Effect.ALLOW,
     principals: [new AnyPrincipal()],
     actions: ['s3:GetObject'],
-    resources: [`${mediaBucket.bucketArn}/memorial-media/*`],
+    resources: [
+      `${mediaBucket.bucketArn}/memorial-media/*`,
+      `${mediaBucket.bucketArn}/gallery-uploads/*`,
+    ],
   }),
 );
 mediaBucket.addCorsRule({

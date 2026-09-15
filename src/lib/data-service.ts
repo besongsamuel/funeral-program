@@ -1,20 +1,33 @@
 import { generateClient } from 'aws-amplify/data';
 import { demoContext, MEMORIAL_ID, MEMORIAL_SLUG } from './demo-data';
 import { isAmplifyConfigured } from './amplify';
+import { uploadGuestGalleryImages } from './storage';
 import type {
   MemorialContext,
   Tribute,
   Story,
   Memorial,
   ContentStatus,
+  GalleryAlbum,
+  GalleryPhoto,
 } from './types';
 
 let localTributes: Tribute[] = [...demoContext.tributes];
 let localStories: Story[] = [...demoContext.stories];
+let localAlbums: GalleryAlbum[] = [...demoContext.galleryAlbums];
+let localPhotos: GalleryPhoto[] = [...demoContext.galleryPhotos];
+
+function isPublicPhoto(photo: GalleryPhoto) {
+  return !photo.status || photo.status === 'approved';
+}
 
 function demoMemorial() {
+  const approvedPhotos = localPhotos.filter(isPublicPhoto);
+  const albumIds = new Set(approvedPhotos.map((p) => p.albumId));
   return {
     ...demoContext,
+    galleryAlbums: localAlbums.filter((a) => albumIds.has(a.id)),
+    galleryPhotos: approvedPhotos,
     tributes: localTributes.filter((t) => t.status === 'approved'),
     stories: localStories.filter((s) => s.status === 'approved'),
   };
@@ -118,6 +131,11 @@ async function loadFromAmplify(client: any, slug: string): Promise<MemorialConte
   const sortByStart = <T extends { startsAt?: string | null }>(arr: T[]) =>
     [...arr].sort((a, b) => (a.startsAt ?? '').localeCompare(b.startsAt ?? ''));
 
+  const approvedPhotos = sortByOrder(
+    (galleryPhotos as GalleryPhoto[]).filter(isPublicPhoto),
+  );
+  const approvedAlbumIds = new Set(approvedPhotos.map((p) => p.albumId));
+
   return {
     memorial: memorial as Memorial,
     biographySections: sortByOrder(biographySections as MemorialContext['biographySections']),
@@ -125,8 +143,8 @@ async function loadFromAmplify(client: any, slug: string): Promise<MemorialConte
     familyMembers: sortByOrder(familyMembers as MemorialContext['familyMembers']),
     funeralEvents: sortByStart(funeralEvents as MemorialContext['funeralEvents']),
     programItems: sortByOrder(programItems as MemorialContext['programItems']),
-    galleryAlbums: sortByOrder(galleryAlbums as MemorialContext['galleryAlbums']),
-    galleryPhotos: sortByOrder(galleryPhotos as MemorialContext['galleryPhotos']),
+    galleryAlbums: sortByOrder(galleryAlbums as GalleryAlbum[]).filter((a) => approvedAlbumIds.has(a.id)),
+    galleryPhotos: approvedPhotos,
     tributes: tributes as Tribute[],
     stories: stories as Story[],
     mediaItems: sortByOrder(mediaItems as MemorialContext['mediaItems']),
@@ -198,15 +216,116 @@ export async function submitStory(input: {
   return data as Story;
 }
 
-export async function getAdminContext(): Promise<MemorialContext & { pendingTributes: Tribute[]; pendingStories: Story[] }> {
+export async function submitGalleryPhotos(input: {
+  authorName: string;
+  albumName: string;
+  category: string;
+  files: FileList | File[];
+}): Promise<GalleryPhoto[]> {
+  const files = Array.from(input.files);
+  if (!files.length) throw new Error('Please choose at least one image.');
+
+  const client = getPublicClient();
+  const albumName = input.albumName.trim();
+  const authorName = input.authorName.trim();
+  if (!authorName) throw new Error('Please enter your name.');
+  if (!albumName) throw new Error('Please enter an album name.');
+  if (!input.category) throw new Error('Please choose a category.');
+
+  if (!client) {
+    let album = localAlbums.find(
+      (a) =>
+        a.name.toLowerCase() === albumName.toLowerCase() &&
+        a.category === input.category,
+    );
+    if (!album) {
+      album = {
+        id: `alb-${Date.now()}`,
+        memorialId: MEMORIAL_ID,
+        name: albumName,
+        category: input.category,
+        sortOrder: localAlbums.length + 1,
+      };
+      localAlbums = [...localAlbums, album];
+    }
+
+    const created: GalleryPhoto[] = files.map((file, index) => ({
+      id: `gp-${Date.now()}-${index}`,
+      memorialId: MEMORIAL_ID,
+      albumId: album!.id,
+      url: URL.createObjectURL(file),
+      caption: file.name,
+      authorName,
+      status: 'pending' as const,
+      sortOrder: index + 1,
+    }));
+    localPhotos = [...created, ...localPhotos];
+    return created;
+  }
+
+  const uploaded = await uploadGuestGalleryImages(files, MEMORIAL_ID);
+
+  const { data: existingAlbums } = await client.models.GalleryAlbum.list({
+    filter: { memorialId: { eq: MEMORIAL_ID } },
+    authMode: 'apiKey',
+  });
+  let album = ((existingAlbums ?? []) as GalleryAlbum[]).find(
+    (a) =>
+      a.name.toLowerCase() === albumName.toLowerCase() &&
+      a.category === input.category,
+  );
+
+  if (!album) {
+    const { data: createdAlbum, errors } = await client.models.GalleryAlbum.create({
+      memorialId: MEMORIAL_ID,
+      name: albumName,
+      category: input.category,
+      sortOrder: (existingAlbums?.length ?? 0) + 1,
+    });
+    if (errors?.length || !createdAlbum) {
+      throw new Error(errors?.[0]?.message ?? 'Could not create album.');
+    }
+    album = createdAlbum as GalleryAlbum;
+  }
+
+  const created: GalleryPhoto[] = [];
+  for (const [index, item] of uploaded.entries()) {
+    const { data, errors } = await client.models.GalleryPhoto.create({
+      memorialId: MEMORIAL_ID,
+      albumId: album.id,
+      url: item.url,
+      caption: item.fileName,
+      authorName,
+      status: 'pending',
+      sortOrder: index + 1,
+    });
+    if (errors?.length || !data) {
+      throw new Error(errors?.[0]?.message ?? 'Could not save photo.');
+    }
+    created.push(data as GalleryPhoto);
+  }
+
+  return created;
+}
+
+export type AdminMemorialContext = MemorialContext & {
+  pendingTributes: Tribute[];
+  pendingStories: Story[];
+  pendingPhotos: GalleryPhoto[];
+};
+
+export async function getAdminContext(): Promise<AdminMemorialContext> {
   const client = getAdminClient() ?? getPublicClient();
   if (!client) {
     return {
       ...demoContext,
+      galleryAlbums: localAlbums,
+      galleryPhotos: localPhotos,
       tributes: localTributes,
       stories: localStories,
       pendingTributes: localTributes.filter((t) => t.status === 'pending'),
       pendingStories: localStories.filter((s) => s.status === 'pending'),
+      pendingPhotos: localPhotos.filter((p) => p.status === 'pending'),
     };
   }
 
@@ -214,23 +333,30 @@ export async function getAdminContext(): Promise<MemorialContext & { pendingTrib
   const memorialId = ctx.memorial.id;
 
   try {
-    const [allTributes, allStories] = await withTimeout(
+    const [allTributes, allStories, allPhotos, allAlbums] = await withTimeout(
       Promise.all([
         client.models.Tribute.list({ filter: { memorialId: { eq: memorialId } }, authMode: 'userPool' }),
         client.models.Story.list({ filter: { memorialId: { eq: memorialId } }, authMode: 'userPool' }),
+        client.models.GalleryPhoto.list({ filter: { memorialId: { eq: memorialId } }, authMode: 'userPool' }),
+        client.models.GalleryAlbum.list({ filter: { memorialId: { eq: memorialId } }, authMode: 'userPool' }),
       ]),
       8000,
     );
 
     const tributes = (allTributes.data ?? []) as Tribute[];
     const stories = (allStories.data ?? []) as Story[];
+    const galleryPhotos = (allPhotos.data ?? []) as GalleryPhoto[];
+    const galleryAlbums = (allAlbums.data ?? []) as GalleryAlbum[];
 
     return {
       ...ctx,
+      galleryAlbums,
+      galleryPhotos,
       tributes,
       stories,
       pendingTributes: tributes.filter((t) => t.status === 'pending'),
       pendingStories: stories.filter((s) => s.status === 'pending'),
+      pendingPhotos: galleryPhotos.filter((p) => p.status === 'pending'),
     };
   } catch (error) {
     console.warn('Admin data request failed — showing public memorial content', error);
@@ -238,6 +364,7 @@ export async function getAdminContext(): Promise<MemorialContext & { pendingTrib
       ...ctx,
       pendingTributes: [],
       pendingStories: [],
+      pendingPhotos: [],
     };
   }
 }
@@ -260,6 +387,15 @@ export async function updateStoryStatus(id: string, status: ContentStatus) {
   await client.models.Story.update({ id, status }, { authMode: 'userPool' });
 }
 
+export async function updateGalleryPhotoStatus(id: string, status: ContentStatus) {
+  const client = getAdminClient();
+  if (!client) {
+    localPhotos = localPhotos.map((p) => (p.id === id ? { ...p, status } : p));
+    return;
+  }
+  await client.models.GalleryPhoto.update({ id, status }, { authMode: 'userPool' });
+}
+
 export async function deleteTribute(id: string) {
   const client = getAdminClient();
   if (!client) {
@@ -276,6 +412,15 @@ export async function deleteStory(id: string) {
     return;
   }
   await client.models.Story.delete({ id }, { authMode: 'userPool' });
+}
+
+export async function deleteGalleryPhoto(id: string) {
+  const client = getAdminClient();
+  if (!client) {
+    localPhotos = localPhotos.filter((p) => p.id !== id);
+    return;
+  }
+  await client.models.GalleryPhoto.delete({ id }, { authMode: 'userPool' });
 }
 
 export async function updateMemorial(id: string, updates: Partial<Memorial>) {

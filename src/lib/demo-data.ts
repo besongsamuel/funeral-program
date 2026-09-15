@@ -312,8 +312,8 @@ export const demoContext: MemorialContext = {
     { id: 'alb-2', memorialId: MEMORIAL_ID, name: 'Programme', category: 'funeral', sortOrder: 2 },
   ],
   galleryPhotos: [
-    { id: 'gp-1', memorialId: MEMORIAL_ID, albumId: 'alb-1', url: portrait, caption: 'Mami Christiana Enanga Besong', sortOrder: 1 },
-    { id: 'gp-2', memorialId: MEMORIAL_ID, albumId: 'alb-2', url: programme, caption: 'Funeral & Thanksgiving Programme, 7–19 November 2026', sortOrder: 1 },
+    { id: 'gp-1', memorialId: MEMORIAL_ID, albumId: 'alb-1', url: portrait, caption: 'Mami Christiana Enanga Besong', status: 'approved', sortOrder: 1 },
+    { id: 'gp-2', memorialId: MEMORIAL_ID, albumId: 'alb-2', url: programme, caption: 'Funeral & Thanksgiving Programme, 7–19 November 2026', status: 'approved', sortOrder: 1 },
   ],
   tributes: [],
   stories: [],

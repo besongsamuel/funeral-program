@@ -58,3 +58,34 @@ export async function uploadGalleryImages(files: FileList | File[], memorialId: 
 
   return uploaded;
 }
+
+export async function uploadGuestGalleryImage(file: File, memorialId: string) {
+  if (!file.type.startsWith('image/')) {
+    throw new Error(`"${file.name}" is not an image file.`);
+  }
+
+  const safeName = sanitizeFileName(file.name);
+  const path = `gallery-uploads/${memorialId}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}-${safeName}`;
+
+  await uploadData({
+    path,
+    data: file,
+    options: {
+      contentType: file.type || 'application/octet-stream',
+    },
+  }).result;
+
+  return {
+    path,
+    url: publicObjectUrl(path),
+    fileName: file.name,
+  };
+}
+
+export async function uploadGuestGalleryImages(files: FileList | File[], memorialId: string) {
+  const uploaded: { path: string; url: string; fileName: string }[] = [];
+  for (const file of Array.from(files)) {
+    uploaded.push(await uploadGuestGalleryImage(file, memorialId));
+  }
+  return uploaded;
+}
