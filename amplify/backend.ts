@@ -105,7 +105,6 @@ for (const model of moderationTables) {
         'dynamodb:GetItem',
         'dynamodb:Query',
         'dynamodb:UpdateItem',
-        'dynamodb:DeleteItem',
       ],
       resources: [table.tableArn, `${table.tableArn}/index/*`],
     }),

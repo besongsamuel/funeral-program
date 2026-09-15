@@ -90,7 +90,7 @@ export function ModeratePage() {
     action: ModerationAction,
     label: string,
   ) => {
-    if (action === 'delete' && !confirm(`Delete this ${label}? This cannot be undone.`)) return;
+    if (action === 'delete' && !confirm(`Remove this ${label} from the site? You can restore it later.`)) return;
     setError('');
     try {
       await moderateItem(type, id, action);
@@ -175,15 +175,20 @@ export function ModeratePage() {
   const pendingTributes = byStatus(tributes, 'pending');
   const approvedTributes = byStatus(tributes, 'approved');
   const rejectedTributes = byStatus(tributes, 'rejected');
+  const deletedTributes = byStatus(tributes, 'deleted');
   const pendingStories = byStatus(stories, 'pending');
   const approvedStories = byStatus(stories, 'approved');
   const rejectedStories = byStatus(stories, 'rejected');
+  const deletedStories = byStatus(stories, 'deleted');
   const pendingPhotos = byStatus(photos, 'pending');
   const approvedPhotos = byStatus(photos, 'approved');
   const rejectedPhotos = byStatus(photos, 'rejected');
+  const deletedPhotos = byStatus(photos, 'deleted');
 
-  const renderTribute = (item: ModerationTribute, mode: 'pending' | 'published' | 'rejected') => (
-    <div key={item.id} className={`card ${mode === 'rejected' ? 'opacity-80' : ''}`}>
+  type ItemMode = 'pending' | 'published' | 'rejected' | 'deleted';
+
+  const renderTribute = (item: ModerationTribute, mode: ItemMode) => (
+    <div key={item.id} className={`card ${mode === 'rejected' || mode === 'deleted' ? 'opacity-80' : ''}`}>
       <p className="text-sm font-medium text-memorial-700">
         Tribute from {item.authorName || 'Anonymous'}
         {item.isGuestbookSignature ? ' (guestbook)' : ''}
@@ -191,13 +196,22 @@ export function ModeratePage() {
       </p>
       <p className="mt-2 text-gray-700">{item.message}</p>
       <div className="mt-4 flex flex-wrap gap-2">
-        {mode !== 'published' && (
+        {(mode === 'pending' || mode === 'rejected' || mode === 'deleted') && (
           <button
             type="button"
             className="btn-primary text-xs"
             onClick={() => handleModerate('tribute', item.id, 'approve', 'tribute')}
           >
             Approve
+          </button>
+        )}
+        {(mode === 'rejected' || mode === 'deleted') && (
+          <button
+            type="button"
+            className="btn-secondary text-xs"
+            onClick={() => handleModerate('tribute', item.id, 'restore', 'tribute')}
+          >
+            {mode === 'deleted' ? 'Undelete' : 'Unreject'}
           </button>
         )}
         {mode === 'pending' && (
@@ -209,31 +223,42 @@ export function ModeratePage() {
             Reject
           </button>
         )}
-        <button
-          type="button"
-          className="btn-ghost text-xs text-red-600"
-          onClick={() => handleModerate('tribute', item.id, 'delete', 'tribute')}
-        >
-          Delete
-        </button>
+        {mode !== 'deleted' && (
+          <button
+            type="button"
+            className="btn-ghost text-xs text-red-600"
+            onClick={() => handleModerate('tribute', item.id, 'delete', 'tribute')}
+          >
+            Delete
+          </button>
+        )}
       </div>
     </div>
   );
 
-  const renderStory = (item: ModerationStory, mode: 'pending' | 'published' | 'rejected') => (
-    <div key={item.id} className={`card ${mode === 'rejected' ? 'opacity-80' : ''}`}>
+  const renderStory = (item: ModerationStory, mode: ItemMode) => (
+    <div key={item.id} className={`card ${mode === 'rejected' || mode === 'deleted' ? 'opacity-80' : ''}`}>
       <p className="text-sm font-medium text-memorial-700">
         Story: {item.title} by {item.authorName || 'Anonymous'}
       </p>
       <p className="mt-2 text-gray-700">{item.body}</p>
       <div className="mt-4 flex flex-wrap gap-2">
-        {mode !== 'published' && (
+        {(mode === 'pending' || mode === 'rejected' || mode === 'deleted') && (
           <button
             type="button"
             className="btn-primary text-xs"
             onClick={() => handleModerate('story', item.id, 'approve', 'story')}
           >
             Approve
+          </button>
+        )}
+        {(mode === 'rejected' || mode === 'deleted') && (
+          <button
+            type="button"
+            className="btn-secondary text-xs"
+            onClick={() => handleModerate('story', item.id, 'restore', 'story')}
+          >
+            {mode === 'deleted' ? 'Undelete' : 'Unreject'}
           </button>
         )}
         {mode === 'pending' && (
@@ -245,19 +270,21 @@ export function ModeratePage() {
             Reject
           </button>
         )}
-        <button
-          type="button"
-          className="btn-ghost text-xs text-red-600"
-          onClick={() => handleModerate('story', item.id, 'delete', 'story')}
-        >
-          Delete
-        </button>
+        {mode !== 'deleted' && (
+          <button
+            type="button"
+            className="btn-ghost text-xs text-red-600"
+            onClick={() => handleModerate('story', item.id, 'delete', 'story')}
+          >
+            Delete
+          </button>
+        )}
       </div>
     </div>
   );
 
-  const renderPhoto = (item: ModerationPhoto, mode: 'pending' | 'published' | 'rejected') => (
-    <div key={item.id} className={`card ${mode === 'rejected' ? 'opacity-80' : ''}`}>
+  const renderPhoto = (item: ModerationPhoto, mode: ItemMode) => (
+    <div key={item.id} className={`card ${mode === 'rejected' || mode === 'deleted' ? 'opacity-80' : ''}`}>
       <div className="flex flex-col gap-4 sm:flex-row">
         {item.url && (
           <img
@@ -276,13 +303,22 @@ export function ModeratePage() {
           </p>
           {item.caption && <p className="mt-2 text-sm text-gray-700">{item.caption}</p>}
           <div className="mt-4 flex flex-wrap gap-2">
-            {mode !== 'published' && (
+            {(mode === 'pending' || mode === 'rejected' || mode === 'deleted') && (
               <button
                 type="button"
                 className="btn-primary text-xs"
                 onClick={() => handleModerate('photo', item.id, 'approve', 'photo')}
               >
                 Approve
+              </button>
+            )}
+            {(mode === 'rejected' || mode === 'deleted') && (
+              <button
+                type="button"
+                className="btn-secondary text-xs"
+                onClick={() => handleModerate('photo', item.id, 'restore', 'photo')}
+              >
+                {mode === 'deleted' ? 'Undelete' : 'Unreject'}
               </button>
             )}
             {mode === 'pending' && (
@@ -294,13 +330,15 @@ export function ModeratePage() {
                 Reject
               </button>
             )}
-            <button
-              type="button"
-              className="btn-ghost text-xs text-red-600"
-              onClick={() => handleModerate('photo', item.id, 'delete', 'photo')}
-            >
-              Delete
-            </button>
+            {mode !== 'deleted' && (
+              <button
+                type="button"
+                className="btn-ghost text-xs text-red-600"
+                onClick={() => handleModerate('photo', item.id, 'delete', 'photo')}
+              >
+                Delete
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -390,6 +428,14 @@ export function ModeratePage() {
                   {rejectedStories.map((item) => renderStory(item, 'rejected'))}
                 </section>
               )}
+
+              {(deletedTributes.length > 0 || deletedStories.length > 0) && (
+                <section className="space-y-4">
+                  <h2 className="font-serif text-xl font-semibold">Deleted</h2>
+                  {deletedTributes.map((item) => renderTribute(item, 'deleted'))}
+                  {deletedStories.map((item) => renderStory(item, 'deleted'))}
+                </section>
+              )}
             </div>
           ) : (
             <div className="space-y-10">
@@ -415,6 +461,13 @@ export function ModeratePage() {
                 <section className="space-y-4">
                   <h2 className="font-serif text-xl font-semibold">Rejected</h2>
                   {rejectedPhotos.map((item) => renderPhoto(item, 'rejected'))}
+                </section>
+              )}
+
+              {deletedPhotos.length > 0 && (
+                <section className="space-y-4">
+                  <h2 className="font-serif text-xl font-semibold">Deleted</h2>
+                  {deletedPhotos.map((item) => renderPhoto(item, 'deleted'))}
                 </section>
               )}
             </div>

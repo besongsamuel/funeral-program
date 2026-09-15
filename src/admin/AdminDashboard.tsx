@@ -45,7 +45,7 @@ export function AdminDashboard() {
   };
 
   const handleDelete = async (type: ModeratedType, id: string, label: string) => {
-    if (!confirm(`Delete this ${label}? This cannot be undone.`)) return;
+    if (!confirm(`Remove this ${label} from the site? You can restore it later.`)) return;
     if (type === 'tribute') await deleteTribute(id);
     else await deleteStory(id);
     await refresh();
@@ -57,7 +57,7 @@ export function AdminDashboard() {
   };
 
   const handlePhotoDelete = async (id: string) => {
-    if (!confirm('Delete this photo? This cannot be undone.')) return;
+    if (!confirm('Remove this photo from the site? You can restore it later.')) return;
     await deleteGalleryPhoto(id);
     await refresh();
   };
@@ -76,9 +76,13 @@ export function AdminDashboard() {
   const approvedStories = data.stories.filter((s) => s.status === 'approved');
   const rejectedTributes = data.tributes.filter((t) => t.status === 'rejected');
   const rejectedStories = data.stories.filter((s) => s.status === 'rejected');
+  const deletedTributes = data.tributes.filter((t) => t.status === 'deleted');
+  const deletedStories = data.stories.filter((s) => s.status === 'deleted');
   const approvedPhotos = data.galleryPhotos.filter((p) => p.status === 'approved');
   const rejectedPhotos = data.galleryPhotos.filter((p) => p.status === 'rejected');
-  const submissionCount = data.tributes.length + data.stories.length;
+  const deletedPhotos = data.galleryPhotos.filter((p) => p.status === 'deleted');
+  const submissionCount = data.tributes.filter((t) => t.status !== 'deleted').length
+    + data.stories.filter((s) => s.status !== 'deleted').length;
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'profile', label: 'Profile' },
@@ -91,9 +95,9 @@ export function AdminDashboard() {
 
   const renderPhotoCard = (
     photo: GalleryPhoto,
-    actions: 'pending' | 'published' | 'rejected',
+    actions: 'pending' | 'published' | 'rejected' | 'deleted',
   ) => (
-    <div key={photo.id} className={`card ${actions === 'rejected' ? 'opacity-80' : ''}`}>
+    <div key={photo.id} className={`card ${actions === 'rejected' || actions === 'deleted' ? 'opacity-80' : ''}`}>
       <div className="flex flex-col gap-4 sm:flex-row">
         <img
           src={photo.url}
@@ -120,14 +124,21 @@ export function AdminDashboard() {
                 </button>
               </>
             )}
-            {actions === 'rejected' && (
-              <button onClick={() => handlePhotoStatus(photo.id, 'approved')} className="btn-primary text-xs">
-                Approve
+            {(actions === 'rejected' || actions === 'deleted') && (
+              <>
+                <button onClick={() => handlePhotoStatus(photo.id, 'approved')} className="btn-primary text-xs">
+                  Approve
+                </button>
+                <button onClick={() => handlePhotoStatus(photo.id, 'pending')} className="btn-secondary text-xs">
+                  {actions === 'deleted' ? 'Undelete' : 'Unreject'}
+                </button>
+              </>
+            )}
+            {actions !== 'deleted' && (
+              <button onClick={() => handlePhotoDelete(photo.id)} className="btn-ghost text-xs text-red-600">
+                Delete
               </button>
             )}
-            <button onClick={() => handlePhotoDelete(photo.id)} className="btn-ghost text-xs text-red-600">
-              Delete
-            </button>
           </div>
         </div>
       </div>
@@ -248,6 +259,7 @@ export function AdminDashboard() {
                     <p className="mt-2 text-gray-700">{t.message}</p>
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button onClick={() => handleModerate('tribute', t.id, 'approved')} className="btn-primary text-xs">Approve</button>
+                      <button onClick={() => handleModerate('tribute', t.id, 'pending')} className="btn-secondary text-xs">Unreject</button>
                       <button onClick={() => handleDelete('tribute', t.id, 'tribute')} className="btn-ghost text-xs text-red-600">Delete</button>
                     </div>
                   </div>
@@ -258,7 +270,34 @@ export function AdminDashboard() {
                     <p className="mt-2 text-gray-700">{s.body}</p>
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button onClick={() => handleModerate('story', s.id, 'approved')} className="btn-primary text-xs">Approve</button>
+                      <button onClick={() => handleModerate('story', s.id, 'pending')} className="btn-secondary text-xs">Unreject</button>
                       <button onClick={() => handleDelete('story', s.id, 'story')} className="btn-ghost text-xs text-red-600">Delete</button>
+                    </div>
+                  </div>
+                ))}
+              </section>
+            )}
+
+            {(deletedTributes.length > 0 || deletedStories.length > 0) && (
+              <section className="space-y-6">
+                <h3 className="font-serif text-xl font-semibold">Deleted</h3>
+                {deletedTributes.map((t) => (
+                  <div key={t.id} className="card opacity-80">
+                    <p className="text-sm font-medium text-memorial-700">Tribute from {t.authorName}</p>
+                    <p className="mt-2 text-gray-700">{t.message}</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <button onClick={() => handleModerate('tribute', t.id, 'approved')} className="btn-primary text-xs">Approve</button>
+                      <button onClick={() => handleModerate('tribute', t.id, 'pending')} className="btn-secondary text-xs">Undelete</button>
+                    </div>
+                  </div>
+                ))}
+                {deletedStories.map((s) => (
+                  <div key={s.id} className="card opacity-80">
+                    <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}</p>
+                    <p className="mt-2 text-gray-700">{s.body}</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <button onClick={() => handleModerate('story', s.id, 'approved')} className="btn-primary text-xs">Approve</button>
+                      <button onClick={() => handleModerate('story', s.id, 'pending')} className="btn-secondary text-xs">Undelete</button>
                     </div>
                   </div>
                 ))}
@@ -298,6 +337,13 @@ export function AdminDashboard() {
               <section className="space-y-6">
                 <h3 className="font-serif text-xl font-semibold">Rejected</h3>
                 {rejectedPhotos.map((photo) => renderPhotoCard(photo, 'rejected'))}
+              </section>
+            )}
+
+            {deletedPhotos.length > 0 && (
+              <section className="space-y-6">
+                <h3 className="font-serif text-xl font-semibold">Deleted</h3>
+                {deletedPhotos.map((photo) => renderPhotoCard(photo, 'deleted'))}
               </section>
             )}
           </div>

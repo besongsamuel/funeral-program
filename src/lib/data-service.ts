@@ -417,30 +417,15 @@ export async function updateGalleryPhotoStatus(id: string, status: ContentStatus
 }
 
 export async function deleteTribute(id: string) {
-  const client = getAdminClient();
-  if (!client) {
-    localTributes = localTributes.filter((t) => t.id !== id);
-    return;
-  }
-  await client.models.Tribute.delete({ id }, { authMode: 'userPool' });
+  return updateTributeStatus(id, 'deleted');
 }
 
 export async function deleteStory(id: string) {
-  const client = getAdminClient();
-  if (!client) {
-    localStories = localStories.filter((s) => s.id !== id);
-    return;
-  }
-  await client.models.Story.delete({ id }, { authMode: 'userPool' });
+  return updateStoryStatus(id, 'deleted');
 }
 
 export async function deleteGalleryPhoto(id: string) {
-  const client = getAdminClient();
-  if (!client) {
-    localPhotos = localPhotos.filter((p) => p.id !== id);
-    return;
-  }
-  await client.models.GalleryPhoto.delete({ id }, { authMode: 'userPool' });
+  return updateGalleryPhotoStatus(id, 'deleted');
 }
 
 export async function updateMemorial(id: string, updates: Partial<Memorial>) {

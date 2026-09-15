@@ -1,4 +1,4 @@
-export type ContentStatus = 'pending' | 'approved' | 'rejected';
+export type ContentStatus = 'pending' | 'approved' | 'rejected' | 'deleted';
 
 export interface Memorial {
   id: string;

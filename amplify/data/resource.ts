@@ -122,7 +122,7 @@ const schema = a.schema({
       url: a.string().required(),
       caption: a.string(),
       authorName: a.string(),
-      status: a.enum(['pending', 'approved', 'rejected']),
+      status: a.enum(['pending', 'approved', 'rejected', 'deleted']),
       sortOrder: a.integer().default(0),
     })
     .secondaryIndexes((index) => [
@@ -144,7 +144,7 @@ const schema = a.schema({
       message: a.string().required(),
       photoUrl: a.string(),
       isGuestbookSignature: a.boolean().default(false),
-      status: a.enum(['pending', 'approved', 'rejected']),
+      status: a.enum(['pending', 'approved', 'rejected', 'deleted']),
     })
     .secondaryIndexes((index) => [
       index('memorialId').sortKeys(['status']),
@@ -163,7 +163,7 @@ const schema = a.schema({
       title: a.string().required(),
       body: a.string().required(),
       mediaUrl: a.string(),
-      status: a.enum(['pending', 'approved', 'rejected']),
+      status: a.enum(['pending', 'approved', 'rejected', 'deleted']),
     })
     .secondaryIndexes((index) => [
       index('memorialId').sortKeys(['status']),

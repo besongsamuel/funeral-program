@@ -4,7 +4,7 @@ const TOKEN_KEY = 'moderation-session-token';
 const EXPIRES_KEY = 'moderation-session-expires';
 
 export type ModerationType = 'tribute' | 'story' | 'photo';
-export type ModerationAction = 'approve' | 'reject' | 'delete';
+export type ModerationAction = 'approve' | 'reject' | 'delete' | 'restore';
 
 export interface ModerationTribute {
   id: string;

@@ -3,7 +3,6 @@ import { createHmac, timingSafeEqual, randomBytes } from 'node:crypto';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
   DynamoDBDocumentClient,
-  DeleteCommand,
   QueryCommand,
   UpdateCommand,
 } from '@aws-sdk/lib-dynamodb';
@@ -21,7 +20,7 @@ const INDEX: Record<string, string> = {
 };
 
 type ModerateType = 'tribute' | 'story' | 'photo';
-type ModerateAction = 'approve' | 'reject' | 'delete';
+type ModerateAction = 'approve' | 'reject' | 'delete' | 'restore';
 
 const failedUnlocks = new Map<string, { count: number; until: number }>();
 
@@ -178,12 +177,15 @@ async function moderateItem(type: ModerateType, id: string, action: ModerateActi
   const table = tableName(model);
   if (!table) throw new Error(`Table for ${model} is not configured`);
 
-  if (action === 'delete') {
-    await doc.send(new DeleteCommand({ TableName: table, Key: { id } }));
-    return;
-  }
+  const status =
+    action === 'approve'
+      ? 'approved'
+      : action === 'reject'
+        ? 'rejected'
+        : action === 'delete'
+          ? 'deleted'
+          : 'pending';
 
-  const status = action === 'approve' ? 'approved' : 'rejected';
   await doc.send(
     new UpdateCommand({
       TableName: table,
@@ -251,7 +253,7 @@ export const handler: Handler = async (event) => {
       if (!id || !['tribute', 'story', 'photo'].includes(type)) {
         return json(400, { error: 'Invalid moderation target' });
       }
-      if (!['approve', 'reject', 'delete'].includes(moderateAction)) {
+      if (!['approve', 'reject', 'delete', 'restore'].includes(moderateAction)) {
         return json(400, { error: 'Invalid moderation action' });
       }
       await moderateItem(type, id, moderateAction);

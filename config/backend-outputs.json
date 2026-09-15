@@ -2805,6 +2805,7 @@
   },
   "version": "1.5",
   "custom": {
-    "assistant_url": "https://ibqn7wo2rjw4gcnvvrq55qgu7q0pzupw.lambda-url.us-east-1.on.aws/"
+    "assistant_url": "https://ibqn7wo2rjw4gcnvvrq55qgu7q0pzupw.lambda-url.us-east-1.on.aws/",
+    "moderation_url": "https://oqjczt5xphtfs5x44cwpvo7g540gzhkn.lambda-url.us-east-1.on.aws/"
   }
 }
