@@ -1,4 +1,5 @@
 import { defineBackend } from '@aws-amplify/backend';
+import { Duration } from 'aws-cdk-lib';
 import { AnyPrincipal, Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { FunctionUrlAuthType, HttpMethod } from 'aws-cdk-lib/aws-lambda';
 import { CfnBucket, HttpMethods } from 'aws-cdk-lib/aws-s3';
@@ -116,7 +117,8 @@ const moderationUrl = moderationFn.addFunctionUrl({
   cors: {
     allowedOrigins: ['*'],
     allowedMethods: [HttpMethod.POST],
-    allowedHeaders: ['content-type'],
+    allowedHeaders: ['content-type', 'Content-Type'],
+    maxAge: Duration.days(1),
   },
 });
 

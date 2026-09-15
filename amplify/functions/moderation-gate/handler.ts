@@ -27,9 +27,6 @@ const failedUnlocks = new Map<string, { count: number; until: number }>();
 
 const headers = {
   'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'content-type',
-  'Access-Control-Allow-Methods': 'POST,OPTIONS',
 };
 
 function tableName(model: string) {
@@ -203,6 +200,7 @@ async function moderateItem(type: ModerateType, id: string, action: ModerateActi
 
 export const handler: Handler = async (event) => {
   if (event.requestContext?.http?.method === 'OPTIONS') {
+    // Function URL CORS handles preflight; keep a no-op for safety.
     return { statusCode: 204, headers, body: '' };
   }
 
@@ -266,3 +264,4 @@ export const handler: Handler = async (event) => {
     return json(500, { error: 'Moderation request failed' });
   }
 };
+
