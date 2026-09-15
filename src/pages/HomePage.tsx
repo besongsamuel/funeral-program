@@ -77,7 +77,7 @@ export function HomePage() {
 
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               <Link to="/legacy" className="btn-primary">
-                <BookOpen className="h-4 w-4" /> View Their Story
+                <BookOpen className="h-4 w-4" /> View Her Story
               </Link>
               <Link to="/funeral" className="btn-secondary-dark">
                 <Calendar className="h-4 w-4" /> Funeral Program

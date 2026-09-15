@@ -11,6 +11,7 @@ import { MemoriesPage } from '@/pages/MemoriesPage';
 import { TributesPage } from '@/pages/TributesPage';
 import { FamilyPage } from '@/pages/FamilyPage';
 import { DonationsPage } from '@/pages/DonationsPage';
+import { ModeratePage } from '@/pages/ModeratePage';
 import { AdminGuard } from '@/admin/AdminGuard';
 import { AdminDashboard } from '@/admin/AdminDashboard';
 
@@ -30,6 +31,7 @@ export default function App() {
           <Route path="tributes" element={<TributesPage />} />
           <Route path="family" element={<FamilyPage />} />
           <Route path="donations" element={<DonationsPage />} />
+          <Route path="moderate" element={<ModeratePage />} />
         </Route>
         <Route path="admin" element={<AdminGuard />}>
           <Route index element={<AdminDashboard />} />

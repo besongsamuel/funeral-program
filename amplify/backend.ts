@@ -7,6 +7,7 @@ import { data } from './data/resource';
 import { storage } from './storage/resource';
 import { memorialAssistant } from './functions/memorial-assistant/resource';
 import { tributeGuard } from './functions/tribute-guard/resource';
+import { moderationGate } from './functions/moderation-gate/resource';
 
 const backend = defineBackend({
   auth,
@@ -14,6 +15,7 @@ const backend = defineBackend({
   storage,
   memorialAssistant,
   tributeGuard,
+  moderationGate,
 });
 
 // Allow anonymous HTTP reads of gallery/media objects so <img src> works without Cognito.
@@ -90,8 +92,37 @@ const assistantUrl = assistantFn.addFunctionUrl({
   },
 });
 
+const moderationFn = backend.moderationGate.resources.lambda;
+const moderationTables = ['Tribute', 'Story', 'GalleryPhoto', 'GalleryAlbum'] as const;
+
+for (const model of moderationTables) {
+  const table = backend.data.resources.tables[model];
+  moderationFn.addEnvironment(`TABLE_${model}`, table.tableName);
+  moderationFn.addToRolePolicy(
+    new PolicyStatement({
+      actions: [
+        'dynamodb:GetItem',
+        'dynamodb:Query',
+        'dynamodb:UpdateItem',
+        'dynamodb:DeleteItem',
+      ],
+      resources: [table.tableArn, `${table.tableArn}/index/*`],
+    }),
+  );
+}
+
+const moderationUrl = moderationFn.addFunctionUrl({
+  authType: FunctionUrlAuthType.NONE,
+  cors: {
+    allowedOrigins: ['*'],
+    allowedMethods: [HttpMethod.POST],
+    allowedHeaders: ['content-type'],
+  },
+});
+
 backend.addOutput({
   custom: {
     assistant_url: assistantUrl.url,
+    moderation_url: moderationUrl.url,
   },
 });

@@ -2,6 +2,7 @@
 
 interface ImportMetaEnv {
   readonly VITE_ASSISTANT_URL?: string;
+  readonly VITE_MODERATION_URL?: string;
 }
 
 interface ImportMeta {

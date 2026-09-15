@@ -2,7 +2,7 @@ import { Amplify } from 'aws-amplify';
 
 let configured = false;
 let outputs: {
-  custom?: { assistant_url?: string };
+  custom?: { assistant_url?: string; moderation_url?: string };
 } | null = null;
 
 export async function configureAmplify() {
@@ -31,4 +31,8 @@ export function isAmplifyConfigured() {
 
 export function getAssistantUrl() {
   return import.meta.env.VITE_ASSISTANT_URL || outputs?.custom?.assistant_url;
+}
+
+export function getModerationUrl() {
+  return import.meta.env.VITE_MODERATION_URL || outputs?.custom?.moderation_url;
 }

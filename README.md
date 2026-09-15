@@ -6,7 +6,8 @@ A config-driven memorial and funeral website built with **React**, **Vite**, **T
 
 - **Public memorial site** with 7 primary navigation sections
 - **Fully configurable** content via Amplify Data (DynamoDB)
-- **Admin dashboard** at `/admin` for moderation, publishing, and AI settings
+- **Admin dashboard** at `/admin` for content management and Cognito-based settings
+- **Family moderation** at `/moderate` — unlock with a shared 4-character code (no account)
 - **AI memorial assistant** powered by Amazon Bedrock with tool-calling over memorial data
 - **Mobile responsive** purple-and-white design with scroll animations
 - **Demo mode** works without AWS — uses in-memory demo data
@@ -53,10 +54,30 @@ The public site then reads that data over the AppSync API key (no sign-in). Keep
 
 ### AI Assistant
 
-After sandbox deploy, set the Lambda Function URL in `.env`:
+After sandbox deploy, set the Lambda Function URL in `.env` if needed (also written to `amplify_outputs.json` as `custom.assistant_url`):
 
 ```
 VITE_ASSISTANT_URL=https://your-function-url.lambda-url.region.on.aws/
+```
+
+### Family moderation code
+
+The `/moderate` page uses a Lambda Function URL (`custom.moderation_url`) and two Amplify secrets:
+
+```bash
+# Exactly 4 uppercase alphanumeric characters (A–Z, 0–9), e.g. K7MQ
+AWS_PROFILE=aftermath npx ampx sandbox secret set MODERATION_CODE
+
+# Long random string used to sign session tokens
+AWS_PROFILE=aftermath npx ampx sandbox secret set MODERATION_SESSION_SECRET
+```
+
+Then keep (or restart) `yarn sandbox` so the secrets are applied. Share the site URL `/moderate` and the 4-character code privately with family — it is not linked in the public nav.
+
+Optional local override:
+
+```
+VITE_MODERATION_URL=https://your-moderation-function-url.lambda-url.region.on.aws/
 ```
 
 ### Amplify Hosting
@@ -78,9 +99,9 @@ amplify/
   auth/          Cognito + MemorialAdmin group
   data/          DynamoDB models via AppSync
   storage/       S3 buckets for media
-  functions/     memorial-assistant (Bedrock), tribute-guard
+  functions/     memorial-assistant, moderation-gate, tribute-guard
 src/
-  pages/         Public routes
+  pages/         Public routes (including /moderate)
   admin/         Dashboard + auth guard
   components/    Layout, AI chat, UI
   lib/           Data service, demo data, types
@@ -96,20 +117,26 @@ src/
 | `/funeral` | Program + service details |
 | `/funeral/livestream` | Livestream |
 | `/gallery` | Photo albums |
+| `/share-photos` | Guest photo uploads (moderated) |
 | `/memories` | Stories, videos, music |
 | `/tributes` | Condolences + guestbook |
 | `/family` | Family tree |
 | `/donations` | In Their Memory |
+| `/moderate` | Family code moderation (private URL) |
 | `/admin` | Superuser dashboard |
 
 ## Admin Dashboard
 
 - **Profile** — memorial name, tagline, tribute
-- **Moderation** — approve/reject tributes and stories
+- **Content** — biography, funeral, gallery, etc.
+- **Moderation** — approve/reject tributes and stories (Cognito)
+- **Photos** — approve/reject guest photos (Cognito)
 - **AI Assistant** — persona, quick questions, knowledge entries
 - **Publish** — toggle site visibility
 
-With Cognito connected, sign in with an admin account in the `MemorialAdmin` group.
+Family members who should only moderate submissions can use `/moderate` with the shared 4-character code instead of creating Cognito accounts.
+
+With Cognito connected, sign in to `/admin` with an account in the `MemorialAdmin` group.
 
 ## Tech Stack
 
