@@ -19,9 +19,15 @@ function downloadCsv(filename: string, rows: string[][]) {
   URL.revokeObjectURL(url);
 }
 
-export function exportSubmissionsCsv(tributes: Tribute[], stories: Story[], memorialSlug?: string) {
+export function exportSubmissionsCsv(
+  tributes: Tribute[],
+  stories: Story[],
+  memorialSlug?: string,
+  honoreeNames: Record<string, string> = {},
+) {
   const headers = [
     'type',
+    'honoree',
     'status',
     'authorName',
     'relationship',
@@ -31,8 +37,11 @@ export function exportSubmissionsCsv(tributes: Tribute[], stories: Story[], memo
     'createdAt',
   ];
 
+  const nameFor = (honoreeId?: string) => (honoreeId && honoreeNames[honoreeId]) || honoreeId || '';
+
   const tributeRows = tributes.map((t) => [
     t.isGuestbookSignature ? 'guestbook' : 'tribute',
+    nameFor(t.honoreeId),
     t.status,
     t.authorName,
     t.relationship ?? '',
@@ -44,6 +53,7 @@ export function exportSubmissionsCsv(tributes: Tribute[], stories: Story[], memo
 
   const storyRows = stories.map((s) => [
     'story',
+    nameFor(s.honoreeId),
     s.status,
     s.authorName,
     '',

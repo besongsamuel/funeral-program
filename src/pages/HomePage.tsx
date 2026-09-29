@@ -5,7 +5,8 @@ import { useMemorial } from '@/hooks/useMemorial';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { FormattedText } from '@/components/ui/FormattedText';
 import { Countdown } from '@/components/ui/Countdown';
-import { formatDate } from '@/lib/utils';
+import { honoreeName } from '@/lib/honorees';
+import { formatDate, getFirstName } from '@/lib/utils';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { HeroBackdrop } from '@/components/ui/HeroBackdrop';
@@ -15,7 +16,7 @@ export function HomePage() {
   const reduced = useReducedMotion();
 
   usePageMeta(
-    data ? `Remembering ${data.memorial.fullName}` : 'Remembering',
+    data ? `Remembering ${data.honorees.map((honoree) => getFirstName(honoree.fullName)).join(' & ')}` : 'Remembering',
     data?.memorial.tagline,
   );
 
@@ -27,7 +28,7 @@ export function HomePage() {
     );
   }
 
-  const { memorial, funeralEvents, tributes, galleryPhotos, donationCauses } = data;
+  const { memorial, honorees, funeralEvents, tributes, galleryPhotos, donationCauses } = data;
   const service = funeralEvents.find((e) => e.kind === 'service');
   const featuredTribute = tributes[0];
 
@@ -43,43 +44,66 @@ export function HomePage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <p className="type-intro-on-dark mb-4 text-sm">
-              Celebrating a Life of Love &amp; Legacy
-            </p>
-
-            {memorial.portraitUrl && (
-              <motion.img
-                src={memorial.portraitUrl}
-                alt={memorial.fullName}
-                className="portrait-gold-ring mx-auto mb-8 h-40 w-40 rounded-full border-4 border-gold-400 object-cover object-top sm:h-48 sm:w-48"
-                initial={reduced ? false : { scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.6 }}
-              />
-            )}
-
-            <h1 className="type-name-on-dark text-4xl sm:text-5xl lg:text-6xl">
-              {memorial.fullName}
+            <h1 className="type-intro-on-dark mb-8 text-sm">
+              In loving memory
             </h1>
-            {memorial.maidenName && (
-              <p className="type-maiden-on-dark mt-2 text-lg">née {memorial.maidenName}</p>
-            )}
-            <p className="type-support mt-4 text-lg text-gold-100 sm:text-xl">
-              Sunrise {formatDate(memorial.bornOn)} &nbsp;|&nbsp; Sunset {formatDate(memorial.diedOn)}
-            </p>
-            <p className="type-anniversary-on-dark mt-2 text-sm uppercase tracking-[0.2em]">
-              90 Years of Grace, Love &amp; Legacy
-            </p>
+
+            <div className="mx-auto grid max-w-3xl gap-10 sm:grid-cols-2 sm:grid-rows-[auto_auto_auto_auto_auto_auto] sm:gap-x-10 sm:gap-y-3">
+              {honorees.map((honoree) => (
+                <div
+                  key={honoree.id}
+                  className="flex flex-col items-center gap-3 sm:grid sm:grid-rows-subgrid sm:row-span-6 sm:justify-items-center sm:gap-0"
+                >
+                  {honoree.portraitUrl ? (
+                    <img
+                      src={honoree.portraitUrl}
+                      alt={honoree.fullName}
+                      className="portrait-gold-ring h-36 w-36 rounded-full border-4 border-gold-400 object-cover object-top sm:mb-2 sm:h-44 sm:w-44"
+                    />
+                  ) : (
+                    <div className="hidden sm:block" aria-hidden="true" />
+                  )}
+                  <h2 className="type-name-on-dark text-3xl sm:text-4xl">
+                    {honoree.fullName}
+                  </h2>
+                  {honoree.maidenName ? (
+                    <p className="type-maiden-on-dark text-lg">née {honoree.maidenName}</p>
+                  ) : (
+                    <p className="type-maiden-on-dark hidden text-lg sm:invisible sm:block" aria-hidden="true">
+                      &nbsp;
+                    </p>
+                  )}
+                  <p className="type-support text-base text-gold-100 sm:text-lg">
+                    Sunrise {formatDate(honoree.bornOn)}
+                    <br />
+                    Sunset {formatDate(honoree.diedOn)}
+                  </p>
+                  {honoree.anniversaryLine ? (
+                    <p className="type-anniversary-on-dark text-sm uppercase tracking-[0.2em]">
+                      {honoree.anniversaryLine}
+                    </p>
+                  ) : (
+                    <p
+                      className="type-anniversary-on-dark hidden text-sm uppercase tracking-[0.2em] sm:invisible sm:block"
+                      aria-hidden="true"
+                    >
+                      &nbsp;
+                    </p>
+                  )}
+                  <Link to={`/legacy?person=${honoree.slug}`} className="btn-primary sm:mt-3">
+                    <BookOpen className="h-4 w-4" /> {`View ${getFirstName(honoree.fullName)}'s Story`}
+                  </Link>
+                </div>
+              ))}
+            </div>
+
             {memorial.tagline && (
-              <p className="type-theme-on-dark mx-auto mt-6 max-w-2xl text-lg italic">
+              <p className="type-theme-on-dark mx-auto mt-10 max-w-2xl text-lg italic">
                 &ldquo;{memorial.tagline}&rdquo;
               </p>
             )}
 
-            <div className="mt-10 flex flex-wrap justify-center gap-4">
-              <Link to="/legacy" className="btn-primary">
-                <BookOpen className="h-4 w-4" /> View Her Story
-              </Link>
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Link to="/funeral" className="btn-secondary-dark">
                 <Calendar className="h-4 w-4" /> Funeral Program
               </Link>
@@ -104,15 +128,21 @@ export function HomePage() {
       {/* Bio preview */}
       <section className="section-padding bg-memorial-50">
         <div className="container-memorial">
-          <SectionHeading title="A Life Well Lived" />
-          <motion.p
-            initial={reduced ? false : { opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="type-body mx-auto max-w-3xl text-center text-lg leading-relaxed"
-          >
-            {memorial.shortTribute}
-          </motion.p>
+          <SectionHeading title="Lives Well Lived" />
+          <div className="mx-auto grid max-w-4xl gap-6 md:grid-cols-2">
+            {honorees.map((honoree) => (
+              <motion.div
+                key={honoree.id}
+                initial={reduced ? false : { opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                className="card text-center"
+              >
+                <h3 className="font-serif text-xl font-semibold text-memorial-900">{honoree.fullName}</h3>
+                <p className="type-body mt-3 leading-relaxed">{honoree.shortTribute}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -171,6 +201,7 @@ export function HomePage() {
               <FormattedText text={featuredTribute.message} className="text-lg italic text-gray-700" />
               <footer className="mt-4 text-sm font-medium text-memorial-700">
                 — {featuredTribute.authorName}{featuredTribute.relationship ? `, ${featuredTribute.relationship}` : ''}
+                {honoreeName(honorees, featuredTribute.honoreeId) ? ` · for ${honoreeName(honorees, featuredTribute.honoreeId)}` : ''}
               </footer>
             </motion.blockquote>
           </div>
@@ -193,7 +224,10 @@ export function HomePage() {
                 className="card"
               >
                 <FormattedText text={t.message} className="text-sm text-gray-700" />
-                <p className="mt-3 text-xs font-medium text-memorial-600">— {t.authorName}</p>
+                <p className="mt-3 text-xs font-medium text-memorial-600">
+                  — {t.authorName}
+                  {honoreeName(honorees, t.honoreeId) ? ` · for ${honoreeName(honorees, t.honoreeId)}` : ''}
+                </p>
               </motion.div>
             ))}
           </div>

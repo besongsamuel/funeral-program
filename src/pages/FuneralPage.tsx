@@ -43,7 +43,7 @@ export function FuneralPage() {
           <h1 className="font-serif text-4xl font-bold">Funeral &amp; Thanksgiving Programme</h1>
           <p className="mt-3 text-memorial-200">Honoring {memorial.fullName}</p>
           <p className="mt-2 text-sm uppercase tracking-[0.2em] text-memorial-300">
-            07 – 19 November 2026
+            07 – 21 November 2026
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link to="/funeral/livestream" className="btn-secondary-dark">

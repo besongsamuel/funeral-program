@@ -146,7 +146,7 @@ export function SharePhotosPage() {
             <p className="type-maiden-on-dark mt-1 text-base sm:text-lg">née {memorial.maidenName}</p>
           )}
           <p className="mt-4 text-sm text-memorial-200 sm:text-base">
-            Photos are reviewed by the family before they appear in the gallery.
+            Photos appear in the gallery as soon as you share them.
           </p>
         </div>
       </section>
@@ -159,7 +159,7 @@ export function SharePhotosPage() {
                 <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
                 <h2 className="font-serif text-2xl font-semibold text-memorial-900">Thank you</h2>
                 <p className="text-gray-600">
-                  Your photos were submitted and will appear in the gallery after family review.
+                  Your photos are now in the gallery.
                 </p>
                 <button
                   type="button"
@@ -177,7 +177,7 @@ export function SharePhotosPage() {
                   </h2>
                   <p className="mt-2 text-sm leading-relaxed text-gray-600">
                     Choose an existing album or create a new one, then add one or more images from
-                    your phone or computer. Photos stay private until the family approves them.
+                    your phone or computer. They appear in the gallery as soon as you submit them.
                   </p>
                 </div>
 
@@ -306,7 +306,7 @@ export function SharePhotosPage() {
                 )}
 
                 <p className="rounded-xl border border-gold-200 bg-gold-50/60 px-3 py-3 text-sm leading-relaxed text-memorial-800">
-                  Submitted photos will be approved by the family before they are visible on the site.
+                  Photos appear in the gallery as soon as you submit them.
                 </p>
 
                 <button

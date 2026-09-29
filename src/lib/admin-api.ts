@@ -5,6 +5,7 @@ import type { MemorialContext } from './types';
 
 export type AdminModel =
   | 'Memorial'
+  | 'Honoree'
   | 'BiographySection'
   | 'TimelineEvent'
   | 'FamilyMember'
@@ -20,6 +21,7 @@ export type AdminModel =
   | 'AiKnowledgeEntry';
 
 const LIST_KEYS: Partial<Record<AdminModel, keyof MemorialContext>> = {
+  Honoree: 'honorees',
   BiographySection: 'biographySections',
   TimelineEvent: 'timelineEvents',
   FamilyMember: 'familyMembers',

@@ -4,6 +4,7 @@ import { isAmplifyConfigured } from '@/lib/amplify';
 import { adminRemove, adminSave, isDraftId, newDraftId } from '@/lib/admin-api';
 import { uploadGalleryImages } from '@/lib/storage';
 import type {
+  Honoree,
   BiographySection,
   DonationCause,
   FamilyContact,
@@ -121,6 +122,7 @@ export function AdminContent({ data, onChanged }: { data: MemorialContext; onCha
             <BiographyForm
               key={item.id}
               item={item}
+              honorees={data.honorees}
               onChanged={() => refresh(() => setBioDrafts((items) => items.filter((row) => row.id !== item.id)))}
             />
           ))}
@@ -131,6 +133,7 @@ export function AdminContent({ data, onChanged }: { data: MemorialContext; onCha
                 {
                   id: newDraftId(),
                   memorialId,
+                  honoreeId: data.honorees[0]?.id,
                   kind: 'qualities',
                   heading: '',
                   body: '',
@@ -150,6 +153,7 @@ export function AdminContent({ data, onChanged }: { data: MemorialContext; onCha
             <TimelineForm
               key={item.id}
               item={item}
+              honorees={data.honorees}
               onChanged={() => refresh(() => setTimelineDrafts((items) => items.filter((row) => row.id !== item.id)))}
             />
           ))}
@@ -160,6 +164,7 @@ export function AdminContent({ data, onChanged }: { data: MemorialContext; onCha
                 {
                   id: newDraftId(),
                   memorialId,
+                  honoreeId: data.honorees[0]?.id,
                   eventDate: '',
                   title: '',
                   description: '',
@@ -423,13 +428,43 @@ export function AdminContent({ data, onChanged }: { data: MemorialContext; onCha
   );
 }
 
-function BiographyForm({ item, onChanged }: { item: BiographySection; onChanged: () => Promise<void> | void }) {
+function HonoreeSelect({
+  honorees,
+  value,
+  onChange,
+}: {
+  honorees: Honoree[];
+  value?: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <Field label="Person">
+      <SelectInput value={value ?? ''} onChange={(e) => onChange(e.target.value)} required>
+        <option value="" disabled>Choose a person</option>
+        {honorees.map((honoree) => (
+          <option key={honoree.id} value={honoree.id}>{honoree.fullName}</option>
+        ))}
+      </SelectInput>
+    </Field>
+  );
+}
+
+function BiographyForm({
+  item,
+  honorees,
+  onChanged,
+}: {
+  item: BiographySection;
+  honorees: Honoree[];
+  onChanged: () => Promise<void> | void;
+}) {
   const form = useRecordForm(item);
   return (
     <form className="card space-y-3" onSubmit={(event) => form.submit(event, async (values) => {
       await adminSave('BiographySection', values);
       await onChanged();
     })}>
+      <HonoreeSelect honorees={honorees} value={form.draft.honoreeId} onChange={(value) => form.set('honoreeId', value)} />
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Kind">
           <SelectInput value={form.draft.kind} onChange={(e) => form.set('kind', e.target.value)}>
@@ -464,13 +499,22 @@ function BiographyForm({ item, onChanged }: { item: BiographySection; onChanged:
   );
 }
 
-function TimelineForm({ item, onChanged }: { item: TimelineEvent; onChanged: () => Promise<void> | void }) {
+function TimelineForm({
+  item,
+  honorees,
+  onChanged,
+}: {
+  item: TimelineEvent;
+  honorees: Honoree[];
+  onChanged: () => Promise<void> | void;
+}) {
   const form = useRecordForm(item);
   return (
     <form className="card space-y-3" onSubmit={(event) => form.submit(event, async (values) => {
       await adminSave('TimelineEvent', values);
       await onChanged();
     })}>
+      <HonoreeSelect honorees={honorees} value={form.draft.honoreeId} onChange={(value) => form.set('honoreeId', value)} />
       <div className="grid gap-3 sm:grid-cols-2">
         <Field label="Date">
           <TextInput type="date" value={form.draft.eventDate} onChange={(e) => form.set('eventDate', e.target.value)} required />

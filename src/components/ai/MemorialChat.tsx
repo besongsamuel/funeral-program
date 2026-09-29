@@ -87,7 +87,9 @@ export function MemorialChat() {
 
   if (!data?.aiSettings.isEnabled) return null;
 
-  const firstName = getFirstName(data.memorial.fullName);
+  const firstName = data.honorees.length
+    ? data.honorees.map((honoree) => getFirstName(honoree.fullName)).join(' & ')
+    : getFirstName(data.memorial.fullName);
   const assistantName = data.aiSettings.assistantName;
 
   const sendMessage = async (text: string) => {

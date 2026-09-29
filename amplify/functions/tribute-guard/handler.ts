@@ -2,6 +2,7 @@ import type { Handler } from 'aws-lambda';
 
 interface TributeInput {
   memorialId: string;
+  honoreeId?: string;
   authorName: string;
   relationship?: string;
   message: string;
@@ -12,6 +13,7 @@ interface TributeInput {
 
 interface StoryInput {
   memorialId: string;
+  honoreeId?: string;
   authorName: string;
   title: string;
   body: string;
@@ -32,7 +34,7 @@ export const handler: Handler = async (event) => {
 
   const sanitized = {
     ...data,
-    status: 'pending',
+    status: 'approved',
   };
 
   return {

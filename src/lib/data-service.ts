@@ -7,6 +7,7 @@ import type {
   Tribute,
   Story,
   Memorial,
+  Honoree,
   ContentStatus,
   GalleryAlbum,
   GalleryPhoto,
@@ -91,6 +92,7 @@ async function loadFromAmplify(client: any, slug: string): Promise<MemorialConte
 
   const memorialId = memorial.id;
   const [
+    honorees,
     biographySections,
     timelineEvents,
     familyMembers,
@@ -107,6 +109,7 @@ async function loadFromAmplify(client: any, slug: string): Promise<MemorialConte
     aiQuickQuestions,
     aiKnowledgeEntries,
   ] = await Promise.all([
+    listAll(client.models.Honoree, { memorialId: { eq: memorialId } }),
     listAll(client.models.BiographySection, { memorialId: { eq: memorialId } }),
     listAll(client.models.TimelineEvent, { memorialId: { eq: memorialId } }),
     listAll(client.models.FamilyMember, { memorialId: { eq: memorialId } }),
@@ -136,6 +139,7 @@ async function loadFromAmplify(client: any, slug: string): Promise<MemorialConte
 
   return {
     memorial: memorial as Memorial,
+    honorees: sortByOrder(honorees as Honoree[]),
     biographySections: sortByOrder(biographySections as MemorialContext['biographySections']),
     timelineEvents: sortByOrder(timelineEvents as MemorialContext['timelineEvents']),
     familyMembers: sortByOrder(familyMembers as MemorialContext['familyMembers']),
@@ -155,6 +159,7 @@ async function loadFromAmplify(client: any, slug: string): Promise<MemorialConte
 }
 
 export async function submitTribute(input: {
+  honoreeId: string;
   authorName: string;
   relationship?: string;
   message: string;
@@ -167,7 +172,7 @@ export async function submitTribute(input: {
     memorialId: MEMORIAL_ID,
     ...input,
     isGuestbookSignature: input.isGuestbookSignature ?? false,
-    status: 'pending',
+    status: 'approved',
   };
 
   if (!client) {
@@ -177,17 +182,19 @@ export async function submitTribute(input: {
 
   const { data } = await client.models.Tribute.create({
     memorialId: MEMORIAL_ID,
+    honoreeId: input.honoreeId,
     authorName: input.authorName,
     relationship: input.relationship,
     message: input.message,
     photoUrl: input.photoUrl,
     isGuestbookSignature: input.isGuestbookSignature ?? false,
-    status: 'pending',
+    status: 'approved',
   });
   return data as Tribute;
 }
 
 export async function submitStory(input: {
+  honoreeId: string;
   authorName: string;
   title: string;
   body: string;
@@ -198,7 +205,7 @@ export async function submitStory(input: {
     id: `st-${Date.now()}`,
     memorialId: MEMORIAL_ID,
     ...input,
-    status: 'pending',
+    status: 'approved',
   };
 
   if (!client) {
@@ -208,8 +215,12 @@ export async function submitStory(input: {
 
   const { data } = await client.models.Story.create({
     memorialId: MEMORIAL_ID,
-    ...input,
-    status: 'pending',
+    honoreeId: input.honoreeId,
+    authorName: input.authorName,
+    title: input.title,
+    body: input.body,
+    mediaUrl: input.mediaUrl,
+    status: 'approved',
   });
   return data as Story;
 }
@@ -300,7 +311,7 @@ export async function submitGalleryPhotos(input: {
       url: URL.createObjectURL(file),
       caption: file.name,
       authorName: authorName || undefined,
-      status: 'pending' as const,
+      status: 'approved' as const,
       sortOrder: index + 1,
     }));
     localPhotos = [...created, ...localPhotos];
@@ -316,7 +327,7 @@ export async function submitGalleryPhotos(input: {
       url: item.url,
       caption: item.fileName,
       authorName: authorName || undefined,
-      status: 'pending',
+      status: 'approved',
       sortOrder: index + 1,
     });
     if (errors?.length || !data) {

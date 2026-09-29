@@ -1,49 +1,88 @@
 import { useState } from 'react';
 import { adminRemove, adminSave, isDraftId, newDraftId } from '@/lib/admin-api';
-import type { AiKnowledgeEntry, AiQuickQuestion, AiSettings, Memorial } from '@/lib/types';
+import type { AiKnowledgeEntry, AiQuickQuestion, AiSettings, Honoree, Memorial } from '@/lib/types';
 import { Field, SaveBar, TextArea, TextInput, useRecordForm } from './form-controls';
 
-export function AdminProfile({ memorial, onChanged }: { memorial: Memorial; onChanged: () => Promise<void> | void }) {
+export function AdminProfile({
+  memorial,
+  honorees,
+  onChanged,
+}: {
+  memorial: Memorial;
+  honorees: Honoree[];
+  onChanged: () => Promise<void> | void;
+}) {
   const form = useRecordForm(memorial);
   return (
-    <div className="max-w-2xl space-y-6">
-      <h2 className="font-serif text-2xl font-semibold">Profile & Theme</h2>
-      <form className="card space-y-4" onSubmit={(event) => form.submit(event, async (values) => {
-        await adminSave('Memorial', values);
-        await onChanged();
-      })}>
-        <Field label="Full name">
-          <TextInput value={form.draft.fullName} onChange={(e) => form.set('fullName', e.target.value)} required />
-        </Field>
-        <Field label="Maiden name">
-          <TextInput value={form.draft.maidenName ?? ''} onChange={(e) => form.set('maidenName', e.target.value)} />
-        </Field>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Sunrise">
-            <TextInput type="date" value={form.draft.bornOn} onChange={(e) => form.set('bornOn', e.target.value)} required />
+    <div className="max-w-2xl space-y-8">
+      <div className="space-y-6">
+        <h2 className="font-serif text-2xl font-semibold">Site</h2>
+        <form className="card space-y-4" onSubmit={(event) => form.submit(event, async (values) => {
+          await adminSave('Memorial', values);
+          await onChanged();
+        })}>
+          <Field label="Site title">
+            <TextInput value={form.draft.fullName} onChange={(e) => form.set('fullName', e.target.value)} required />
           </Field>
-          <Field label="Sunset">
-            <TextInput type="date" value={form.draft.diedOn} onChange={(e) => form.set('diedOn', e.target.value)} required />
+          <Field label="Shared tagline">
+            <TextInput value={form.draft.tagline ?? ''} onChange={(e) => form.set('tagline', e.target.value)} />
           </Field>
-        </div>
-        <Field label="Tagline">
-          <TextInput value={form.draft.tagline ?? ''} onChange={(e) => form.set('tagline', e.target.value)} />
-        </Field>
-        <Field label="Short tribute">
-          <TextArea rows={4} value={form.draft.shortTribute ?? ''} onChange={(e) => form.set('shortTribute', e.target.value)} />
-        </Field>
-        <Field label="Obituary HTML">
-          <TextArea rows={6} value={form.draft.obituaryHtml ?? ''} onChange={(e) => form.set('obituaryHtml', e.target.value)} />
-        </Field>
-        <Field label="Portrait URL">
-          <TextInput value={form.draft.portraitUrl ?? ''} onChange={(e) => form.set('portraitUrl', e.target.value)} />
-        </Field>
-        <Field label="Programme image / PDF URL">
-          <TextInput value={form.draft.programPdfUrl ?? ''} onChange={(e) => form.set('programPdfUrl', e.target.value)} />
-        </Field>
-        <SaveBar saving={form.saving} message={form.message} />
-      </form>
+          <Field label="Programme image / PDF URL">
+            <TextInput value={form.draft.programPdfUrl ?? ''} onChange={(e) => form.set('programPdfUrl', e.target.value)} />
+          </Field>
+          <SaveBar saving={form.saving} message={form.message} />
+        </form>
+      </div>
+
+      <div className="space-y-4">
+        <h2 className="font-serif text-2xl font-semibold">People</h2>
+        {honorees.map((honoree) => (
+          <HonoreeForm key={honoree.id} honoree={honoree} onChanged={onChanged} />
+        ))}
+      </div>
     </div>
+  );
+}
+
+function HonoreeForm({ honoree, onChanged }: { honoree: Honoree; onChanged: () => Promise<void> | void }) {
+  const form = useRecordForm(honoree);
+  return (
+    <form className="card space-y-4" onSubmit={(event) => form.submit(event, async (values) => {
+      await adminSave('Honoree', values);
+      await onChanged();
+    })}>
+      <h3 className="font-serif text-xl font-semibold">{honoree.fullName}</h3>
+      <Field label="Full name">
+        <TextInput value={form.draft.fullName} onChange={(e) => form.set('fullName', e.target.value)} required />
+      </Field>
+      <Field label="Maiden name">
+        <TextInput value={form.draft.maidenName ?? ''} onChange={(e) => form.set('maidenName', e.target.value)} />
+      </Field>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Sunrise">
+          <TextInput type="date" value={form.draft.bornOn} onChange={(e) => form.set('bornOn', e.target.value)} required />
+        </Field>
+        <Field label="Sunset">
+          <TextInput type="date" value={form.draft.diedOn} onChange={(e) => form.set('diedOn', e.target.value)} required />
+        </Field>
+      </div>
+      <Field label="Tagline">
+        <TextInput value={form.draft.tagline ?? ''} onChange={(e) => form.set('tagline', e.target.value)} />
+      </Field>
+      <Field label="Anniversary line">
+        <TextInput value={form.draft.anniversaryLine ?? ''} onChange={(e) => form.set('anniversaryLine', e.target.value)} />
+      </Field>
+      <Field label="Short tribute">
+        <TextArea rows={4} value={form.draft.shortTribute ?? ''} onChange={(e) => form.set('shortTribute', e.target.value)} />
+      </Field>
+      <Field label="Obituary HTML">
+        <TextArea rows={6} value={form.draft.obituaryHtml ?? ''} onChange={(e) => form.set('obituaryHtml', e.target.value)} />
+      </Field>
+      <Field label="Portrait URL">
+        <TextInput value={form.draft.portraitUrl ?? ''} onChange={(e) => form.set('portraitUrl', e.target.value)} />
+      </Field>
+      <SaveBar saving={form.saving} message={form.message} />
+    </form>
   );
 }
 

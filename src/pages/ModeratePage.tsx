@@ -215,13 +215,13 @@ export function ModeratePage() {
             {mode === 'deleted' ? 'Undelete' : 'Unreject'}
           </button>
         )}
-        {mode === 'pending' && (
+        {(mode === 'pending' || mode === 'published') && (
           <button
             type="button"
             className="btn-ghost text-xs text-red-600"
             onClick={() => handleModerate('tribute', item.id, 'reject', 'tribute')}
           >
-            Reject
+            {mode === 'published' ? 'Hide' : 'Reject'}
           </button>
         )}
         {mode !== 'deleted' && (
@@ -262,13 +262,13 @@ export function ModeratePage() {
             {mode === 'deleted' ? 'Undelete' : 'Unreject'}
           </button>
         )}
-        {mode === 'pending' && (
+        {(mode === 'pending' || mode === 'published') && (
           <button
             type="button"
             className="btn-ghost text-xs text-red-600"
             onClick={() => handleModerate('story', item.id, 'reject', 'story')}
           >
-            Reject
+            {mode === 'published' ? 'Hide' : 'Reject'}
           </button>
         )}
         {mode !== 'deleted' && (
@@ -322,13 +322,13 @@ export function ModeratePage() {
                 {mode === 'deleted' ? 'Undelete' : 'Unreject'}
               </button>
             )}
-            {mode === 'pending' && (
+            {(mode === 'pending' || mode === 'published') && (
               <button
                 type="button"
                 className="btn-ghost text-xs text-red-600"
                 onClick={() => handleModerate('photo', item.id, 'reject', 'photo')}
               >
-                Reject
+                {mode === 'published' ? 'Hide' : 'Reject'}
               </button>
             )}
             {mode !== 'deleted' && (
@@ -353,7 +353,7 @@ export function ModeratePage() {
           <div>
             <h1 className="font-serif text-3xl font-bold sm:text-4xl">Family moderation</h1>
             <p className="mt-2 text-sm text-memorial-200">
-              Review tributes, stories, and shared photos
+              New tributes, stories, and photos appear right away. Hide any that are inappropriate.
             </p>
           </div>
           <button type="button" className="btn-secondary-dark min-h-11 touch-manipulation" onClick={signOut}>

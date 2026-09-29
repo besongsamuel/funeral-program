@@ -4,6 +4,7 @@ import { DynamoDBDocumentClient, GetCommand, QueryCommand } from '@aws-sdk/lib-d
 const doc = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
 const INDEX: Record<string, string> = {
+  Honoree: 'honoreesByMemorialIdAndSortOrder',
   BiographySection: 'biographySectionsByMemorialIdAndSortOrder',
   TimelineEvent: 'timelineEventsByMemorialIdAndSortOrder',
   FamilyMember: 'familyMembersByMemorialIdAndSortOrder',
@@ -58,6 +59,7 @@ export async function loadMemorialContext(memorialId?: string) {
   if (!memorial.Item) return null;
 
   const [
+    honorees,
     biographySections,
     timelineEvents,
     familyMembers,
@@ -71,6 +73,7 @@ export async function loadMemorialContext(memorialId?: string) {
     aiSettings,
     aiKnowledgeEntries,
   ] = await Promise.all([
+    queryByMemorial('Honoree', memorialId),
     queryByMemorial('BiographySection', memorialId),
     queryByMemorial('TimelineEvent', memorialId),
     queryByMemorial('FamilyMember', memorialId),
@@ -87,6 +90,7 @@ export async function loadMemorialContext(memorialId?: string) {
 
   return {
     memorial: memorial.Item,
+    honorees,
     biographySections,
     timelineEvents,
     familyMembers,

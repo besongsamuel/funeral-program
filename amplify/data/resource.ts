@@ -33,9 +33,28 @@ const schema = a.schema({
     .secondaryIndexes((index) => [index('slug')])
     .authorization((allow) => publicReadAdminWrite(allow)),
 
+  Honoree: a
+    .model({
+      memorialId: a.id().required(),
+      slug: a.string().required(),
+      fullName: a.string().required(),
+      maidenName: a.string(),
+      portraitUrl: a.string(),
+      bornOn: a.date().required(),
+      diedOn: a.date().required(),
+      tagline: a.string(),
+      shortTribute: a.string(),
+      obituaryHtml: a.string(),
+      anniversaryLine: a.string(),
+      sortOrder: a.integer().default(0),
+    })
+    .secondaryIndexes((index) => [index('memorialId').sortKeys(['sortOrder'])])
+    .authorization((allow) => publicReadAdminWrite(allow)),
+
   BiographySection: a
     .model({
       memorialId: a.id().required(),
+      honoreeId: a.id(),
       kind: a.enum(['childhood', 'education', 'faith', 'accomplishments', 'qualities', 'quotes', 'career']),
       heading: a.string().required(),
       body: a.string().required(),
@@ -48,6 +67,7 @@ const schema = a.schema({
   TimelineEvent: a
     .model({
       memorialId: a.id().required(),
+      honoreeId: a.id(),
       eventDate: a.date().required(),
       title: a.string().required(),
       description: a.string(),
@@ -118,6 +138,7 @@ const schema = a.schema({
   GalleryPhoto: a
     .model({
       memorialId: a.id().required(),
+      honoreeId: a.id(),
       albumId: a.id().required(),
       url: a.string().required(),
       caption: a.string(),
@@ -139,6 +160,7 @@ const schema = a.schema({
   Tribute: a
     .model({
       memorialId: a.id().required(),
+      honoreeId: a.id(),
       authorName: a.string().required(),
       relationship: a.string(),
       message: a.string().required(),
@@ -159,6 +181,7 @@ const schema = a.schema({
   Story: a
     .model({
       memorialId: a.id().required(),
+      honoreeId: a.id(),
       authorName: a.string().required(),
       title: a.string().required(),
       body: a.string().required(),

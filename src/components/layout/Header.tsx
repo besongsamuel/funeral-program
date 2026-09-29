@@ -19,7 +19,11 @@ const navItems = [
 export function Header() {
   const [open, setOpen] = useState(false);
   const { data } = useMemorial();
-  const firstName = data ? getFirstName(data.memorial.fullName) : '';
+  const firstName = data?.honorees.length
+    ? data.honorees.map((honoree) => getFirstName(honoree.fullName)).join(' & ')
+    : data
+      ? getFirstName(data.memorial.fullName)
+      : '';
 
   return (
     <header className="sticky top-0 z-40 border-b-2 border-gold-400 bg-white/90 backdrop-blur-md">

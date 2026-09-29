@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { useMemorial } from '@/hooks/useMemorial';
+import { useSelectedHonoree } from '@/hooks/useSelectedHonoree';
+import { HonoreePicker } from '@/components/ui/HonoreePicker';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { FormattedText } from '@/components/ui/FormattedText';
 import { submitTribute, submitStory } from '@/lib/data-service';
+import { honoreeName, matchesHonoree } from '@/lib/honorees';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { Heart, BookOpen, CheckCircle } from 'lucide-react';
 
@@ -24,6 +26,7 @@ const RELATIONSHIP_OPTIONS = [
 const OTHER_RELATIONSHIP = 'Other';
 
 interface TributeForm {
+  honoreeId: string;
   authorName: string;
   relationship: string;
   otherRelationship: string;
@@ -32,32 +35,54 @@ interface TributeForm {
 }
 
 interface StoryForm {
+  honoreeId: string;
   authorName: string;
   title: string;
   body: string;
 }
 
 export function TributesPage() {
-  const { data } = useMemorial();
+  const { data, honorees, selected, selectPerson } = useSelectedHonoree();
   const [tab, setTab] = useState<'tributes' | 'guestbook' | 'story'>('tributes');
   const [submitted, setSubmitted] = useState(false);
+  const [formHonoreeId, setFormHonoreeId] = useState('');
   const queryClient = useQueryClient();
   const reduced = useReducedMotion();
 
   const tributeForm = useForm<TributeForm>({
-    defaultValues: { isGuestbookSignature: false, relationship: '', otherRelationship: '' },
+    defaultValues: { honoreeId: '', isGuestbookSignature: false, relationship: '', otherRelationship: '' },
   });
-  const storyForm = useForm<StoryForm>();
+  const storyForm = useForm<StoryForm>({ defaultValues: { honoreeId: '' } });
   const selectedRelationship = tributeForm.watch('relationship');
+
+  useEffect(() => {
+    if (!selected) return;
+    setFormHonoreeId(selected.id);
+    tributeForm.setValue('honoreeId', selected.id);
+    storyForm.setValue('honoreeId', selected.id);
+  }, [selected, tributeForm, storyForm]);
 
   if (!data) return null;
 
-  const { memorial } = data;
+  const formHonoree = honorees.find((honoree) => honoree.id === formHonoreeId) ?? null;
   const approvedTributes = data.tributes.filter((t) => t.status === 'approved');
-  const guestbook = approvedTributes.filter((t) => t.isGuestbookSignature);
-  const tributes = approvedTributes.filter((t) => !t.isGuestbookSignature);
+  const visibleTributes = selected
+    ? approvedTributes.filter((tribute) => matchesHonoree(tribute.honoreeId, selected, honorees))
+    : approvedTributes;
+  const guestbook = visibleTributes.filter((t) => t.isGuestbookSignature);
+  const tributes = visibleTributes.filter((t) => !t.isGuestbookSignature);
+
+  const chooseFormHonoree = (slug: string | null) => {
+    const honoree = honorees.find((item) => item.slug === slug);
+    const id = honoree?.id ?? '';
+    setFormHonoreeId(id);
+    tributeForm.setValue('honoreeId', id);
+    storyForm.setValue('honoreeId', id);
+    if (slug) selectPerson(slug);
+  };
 
   const onTributeSubmit = async (form: TributeForm) => {
+    if (!formHonoreeId) return;
     const relationship =
       tab === 'guestbook'
         ? undefined
@@ -66,20 +91,22 @@ export function TributesPage() {
           : form.relationship || undefined;
 
     await submitTribute({
+      honoreeId: formHonoreeId,
       authorName: form.authorName,
       relationship,
       message: form.message,
       isGuestbookSignature: tab === 'guestbook',
     });
     setSubmitted(true);
-    tributeForm.reset();
+    tributeForm.reset({ honoreeId: formHonoreeId, isGuestbookSignature: false, relationship: '', otherRelationship: '', authorName: '', message: '' });
     queryClient.invalidateQueries({ queryKey: ['memorial'] });
   };
 
   const onStorySubmit = async (form: StoryForm) => {
-    await submitStory(form);
+    if (!formHonoreeId) return;
+    await submitStory({ ...form, honoreeId: formHonoreeId });
     setSubmitted(true);
-    storyForm.reset();
+    storyForm.reset({ honoreeId: formHonoreeId, authorName: '', title: '', body: '' });
     queryClient.invalidateQueries({ queryKey: ['memorial'] });
   };
 
@@ -87,13 +114,24 @@ export function TributesPage() {
     <div>
       <section className="page-banner">
         <div className="container-memorial px-4 text-center">
-          <p className="type-intro-on-dark mb-3 text-xs sm:text-sm">In loving memory of</p>
-          <h1 className="type-name-on-dark text-3xl sm:text-4xl">{memorial.fullName}</h1>
-          {memorial.maidenName && (
-            <p className="type-maiden-on-dark mt-1 text-lg">née {memorial.maidenName}</p>
+          <p className="type-intro-on-dark mb-3 text-xs sm:text-sm">In loving memory</p>
+          <h1 className="type-name-on-dark text-3xl sm:text-4xl">
+            {formHonoree ? formHonoree.fullName : 'Tributes & Condolences'}
+          </h1>
+          {formHonoree?.maidenName && (
+            <p className="type-maiden-on-dark mt-1 text-lg">née {formHonoree.maidenName}</p>
           )}
           <p className="mt-4 font-serif text-xl text-white/90">Tributes &amp; Condolences</p>
-          <p className="mt-2 text-memorial-200">Share your memories and messages</p>
+          <p className="mt-2 text-memorial-200">Choose who you are remembering</p>
+          <div className="mt-8">
+            <HonoreePicker
+              honorees={honorees}
+              selectedSlug={selected?.slug ?? null}
+              onSelect={selectPerson}
+              allowAll
+              allLabel="All messages"
+            />
+          </div>
         </div>
       </section>
 
@@ -134,7 +172,7 @@ export function TributesPage() {
               >
                 <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
                 <h3 className="mt-4 font-serif text-xl font-semibold">Thank You</h3>
-                <p className="mt-2 text-gray-600">Your message has been submitted and will appear after family review.</p>
+                <p className="mt-2 text-gray-600">Your message is now on the memorial.</p>
                 <button onClick={() => setSubmitted(false)} className="btn-primary mt-6">Submit Another</button>
               </motion.div>
             ) : tab === 'story' ? (
@@ -142,8 +180,13 @@ export function TributesPage() {
                 <h3 className="flex items-center gap-2 font-serif text-xl font-semibold text-memorial-900">
                   <BookOpen className="h-5 w-5" /> Share a Story
                 </h3>
+                <PersonField
+                  honorees={honorees}
+                  selectedSlug={formHonoree?.slug ?? null}
+                  onSelect={chooseFormHonoree}
+                />
                 <p className="text-sm text-memorial-700">
-                  A memory of {memorial.fullName}
+                  A memory of {formHonoree?.fullName ?? 'someone you love'}
                 </p>
                 <div>
                   <label className="label">Your Name</label>
@@ -160,16 +203,21 @@ export function TributesPage() {
                     Tip: use *bold* and _italics_. Blank lines start a new paragraph.
                   </p>
                 </div>
-                <button type="submit" className="btn-primary w-full">Submit Story</button>
+                <button type="submit" className="btn-primary w-full" disabled={!formHonoreeId}>Submit Story</button>
               </form>
             ) : (
               <form onSubmit={tributeForm.handleSubmit(onTributeSubmit)} className="card space-y-4">
                 <h3 className="flex items-center justify-center gap-2 text-center font-serif text-xl font-semibold text-memorial-900 sm:justify-start sm:text-left">
                   <Heart className="h-5 w-5 shrink-0" />
                   {tab === 'guestbook'
-                    ? `Sign the Guestbook for ${memorial.fullName}`
-                    : `Leave a Tribute for ${memorial.fullName}`}
+                    ? `Sign the Guestbook${formHonoree ? ` for ${formHonoree.fullName}` : ''}`
+                    : `Leave a Tribute${formHonoree ? ` for ${formHonoree.fullName}` : ''}`}
                 </h3>
+                <PersonField
+                  honorees={honorees}
+                  selectedSlug={formHonoree?.slug ?? null}
+                  onSelect={chooseFormHonoree}
+                />
                 <div>
                   <label className="label">Your Name</label>
                   <input {...tributeForm.register('authorName', { required: true })} className="input-field" />
@@ -216,8 +264,8 @@ export function TributesPage() {
                     Tip: use *bold* and _italics_. Blank lines start a new paragraph.
                   </p>
                 </div>
-                <button type="submit" className="btn-primary w-full">Submit Message</button>
-                <p className="text-xs text-gray-500 text-center">Messages are reviewed by the family before publication.</p>
+                <button type="submit" className="btn-primary w-full" disabled={!formHonoreeId}>Submit Message</button>
+                <p className="text-xs text-gray-500 text-center">Your message appears on the memorial as soon as you send it.</p>
               </form>
             )}
           </div>
@@ -226,7 +274,10 @@ export function TributesPage() {
 
       <section className="section-padding bg-memorial-50">
         <div className="container-memorial">
-          <SectionHeading title="Messages" subtitle={`Shared in honour of ${memorial.fullName}`} />
+          <SectionHeading
+            title="Messages"
+            subtitle={selected ? `Shared in honour of ${selected.fullName}` : 'Shared in honour of Mami and Hilary'}
+          />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[...tributes, ...guestbook].map((t, i) => {
               const isLong = t.message.length > 320 || t.message.includes('\n');
@@ -243,12 +294,37 @@ export function TributesPage() {
                   <p className="mt-3 text-sm font-medium text-memorial-700">
                     — {t.authorName}{t.relationship ? `, ${t.relationship}` : ''}
                   </p>
+                  {honoreeName(honorees, t.honoreeId) && (
+                    <p className="mt-1 text-xs uppercase tracking-wide text-memorial-500">
+                      In honour of {honoreeName(honorees, t.honoreeId)}
+                    </p>
+                  )}
                 </motion.div>
               );
             })}
           </div>
         </div>
       </section>
+    </div>
+  );
+}
+
+function PersonField({
+  honorees,
+  selectedSlug,
+  onSelect,
+}: {
+  honorees: ReturnType<typeof useSelectedHonoree>['honorees'];
+  selectedSlug: string | null;
+  onSelect: (slug: string | null) => void;
+}) {
+  return (
+    <div>
+      <p className="label">This message is for</p>
+      <HonoreePicker honorees={honorees} selectedSlug={selectedSlug} onSelect={onSelect} />
+      {!selectedSlug && (
+        <p className="mt-2 text-center text-xs text-gray-500">Choose a person before submitting.</p>
+      )}
     </div>
   );
 }

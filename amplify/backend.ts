@@ -59,6 +59,7 @@ backend.memorialAssistant.resources.lambda.addToRolePolicy(
 
 const assistantTables = [
   'Memorial',
+  'Honoree',
   'BiographySection',
   'TimelineEvent',
   'FamilyMember',

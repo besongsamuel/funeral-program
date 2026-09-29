@@ -1,4 +1,5 @@
 import { useMemorial } from '@/hooks/useMemorial';
+import { honoreeName } from '@/lib/honorees';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { FormattedText } from '@/components/ui/FormattedText';
 import { motion } from 'framer-motion';
@@ -39,7 +40,10 @@ export function MemoriesPage() {
                   className="card"
                 >
                   <h3 className="font-serif text-xl font-semibold text-memorial-900">{story.title}</h3>
-                  <p className="mt-1 text-sm text-memorial-600">by {story.authorName}</p>
+                  <p className="mt-1 text-sm text-memorial-600">
+                    by {story.authorName}
+                    {honoreeName(data.honorees, story.honoreeId) ? ` · in honour of ${honoreeName(data.honorees, story.honoreeId)}` : ''}
+                  </p>
                   <FormattedText text={story.body} className="mt-4 leading-relaxed text-gray-700" />
                 </motion.article>
               ))}

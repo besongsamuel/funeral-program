@@ -17,9 +17,26 @@ export interface Memorial {
   programPdfUrl?: string;
 }
 
+export interface Honoree {
+  id: string;
+  memorialId: string;
+  slug: string;
+  fullName: string;
+  maidenName?: string;
+  portraitUrl?: string;
+  bornOn: string;
+  diedOn: string;
+  tagline?: string;
+  shortTribute?: string;
+  obituaryHtml?: string;
+  anniversaryLine?: string;
+  sortOrder: number;
+}
+
 export interface BiographySection {
   id: string;
   memorialId: string;
+  honoreeId?: string;
   kind: string;
   heading: string;
   body: string;
@@ -30,6 +47,7 @@ export interface BiographySection {
 export interface TimelineEvent {
   id: string;
   memorialId: string;
+  honoreeId?: string;
   eventDate: string;
   title: string;
   description?: string;
@@ -85,6 +103,7 @@ export interface GalleryAlbum {
 export interface GalleryPhoto {
   id: string;
   memorialId: string;
+  honoreeId?: string;
   albumId: string;
   url: string;
   caption?: string;
@@ -96,6 +115,7 @@ export interface GalleryPhoto {
 export interface Tribute {
   id: string;
   memorialId: string;
+  honoreeId?: string;
   authorName: string;
   relationship?: string;
   message: string;
@@ -108,6 +128,7 @@ export interface Tribute {
 export interface Story {
   id: string;
   memorialId: string;
+  honoreeId?: string;
   authorName: string;
   title: string;
   body: string;
@@ -175,6 +196,7 @@ export interface AiKnowledgeEntry {
 
 export interface MemorialContext {
   memorial: Memorial;
+  honorees: Honoree[];
   biographySections: BiographySection[];
   timelineEvents: TimelineEvent[];
   familyMembers: FamilyMember[];

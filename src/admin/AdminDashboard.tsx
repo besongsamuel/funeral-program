@@ -11,6 +11,7 @@ import {
   updateMemorial,
 } from '@/lib/data-service';
 import type { ContentStatus, GalleryPhoto } from '@/lib/types';
+import { honoreeName } from '@/lib/honorees';
 import { demoContext } from '@/lib/demo-data';
 import { exportSubmissionsCsv } from '@/lib/export-submissions-csv';
 import { AdminContent } from './AdminContent';
@@ -64,7 +65,8 @@ export function AdminDashboard() {
   };
 
   const handleExportCsv = () => {
-    exportSubmissionsCsv(data.tributes, data.stories, data.memorial.slug);
+    const honoreeNames = Object.fromEntries(data.honorees.map((honoree) => [honoree.id, honoree.fullName]));
+    exportSubmissionsCsv(data.tributes, data.stories, data.memorial.slug, honoreeNames);
   };
 
   const albumName = (photo: GalleryPhoto) =>
@@ -72,6 +74,11 @@ export function AdminDashboard() {
 
   const albumCategory = (photo: GalleryPhoto) =>
     data.galleryAlbums.find((album) => album.id === photo.albumId)?.category ?? '';
+
+  const forPerson = (honoreeId?: string) => {
+    const name = honoreeName(data.honorees, honoreeId);
+    return name ? ` · for ${name}` : '';
+  };
 
   const approvedTributes = data.tributes.filter((t) => t.status === 'approved');
   const approvedStories = data.stories.filter((s) => s.status === 'approved');
@@ -112,6 +119,7 @@ export function AdminDashboard() {
           <p className="mt-1 text-sm text-gray-600">
             {albumName(photo)}
             {albumCategory(photo) ? ` · ${albumCategory(photo)}` : ''}
+            {forPerson(photo.honoreeId)}
           </p>
           {photo.caption && <p className="mt-2 text-sm text-gray-700">{photo.caption}</p>}
           <div className="mt-4 flex flex-wrap gap-2">
@@ -134,6 +142,11 @@ export function AdminDashboard() {
                   {actions === 'deleted' ? 'Undelete' : 'Unreject'}
                 </button>
               </>
+            )}
+            {actions === 'published' && (
+              <button onClick={() => handlePhotoStatus(photo.id, 'rejected')} className="btn-ghost text-xs text-red-600">
+                Hide
+              </button>
             )}
             {actions !== 'deleted' && (
               <button onClick={() => handlePhotoDelete(photo.id)} className="btn-ghost text-xs text-red-600">
@@ -166,7 +179,9 @@ export function AdminDashboard() {
       </nav>
 
       <main className="flex-1 p-8">
-        {tab === 'profile' && <AdminProfile memorial={data.memorial} onChanged={refresh} />}
+        {tab === 'profile' && (
+          <AdminProfile memorial={data.memorial} honorees={data.honorees} onChanged={refresh} />
+        )}
 
         {tab === 'content' && <AdminContent data={data} onChanged={refresh} />}
 
@@ -176,7 +191,8 @@ export function AdminDashboard() {
               <div>
                 <h2 className="font-serif text-2xl font-semibold">Moderation</h2>
                 <p className="mt-1 text-sm text-gray-500">
-                  {submissionCount} submission{submissionCount === 1 ? '' : 's'} total
+                  New tributes and stories appear on the site immediately. Hide any that are inappropriate.
+                  {' '}{submissionCount} submission{submissionCount === 1 ? '' : 's'} total.
                 </p>
               </div>
               <button
@@ -198,7 +214,7 @@ export function AdminDashboard() {
               {data.pendingTributes.map((t) => (
                 <div key={t.id} className="card">
                   <p className="text-sm font-medium text-memorial-700">
-                    Tribute from {t.authorName}
+                    Tribute from {t.authorName}{forPerson(t.honoreeId)}
                     {t.isGuestbookSignature ? ' (guestbook)' : ''}
                   </p>
                   <FormattedText text={t.message} className="mt-2 text-gray-700" />
@@ -211,7 +227,7 @@ export function AdminDashboard() {
               ))}
               {data.pendingStories.map((s) => (
                 <div key={s.id} className="card">
-                  <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}</p>
+                  <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}{forPerson(s.honoreeId)}</p>
                   <FormattedText text={s.body} className="mt-2 text-gray-700" />
                   <div className="mt-4 flex flex-wrap gap-2">
                     <button onClick={() => handleModerate('story', s.id, 'approved')} className="btn-primary text-xs">Approve</button>
@@ -230,21 +246,23 @@ export function AdminDashboard() {
               {approvedTributes.map((t) => (
                 <div key={t.id} className="card">
                   <p className="text-sm font-medium text-memorial-700">
-                    Tribute from {t.authorName}
+                    Tribute from {t.authorName}{forPerson(t.honoreeId)}
                     {t.relationship ? ` · ${t.relationship}` : ''}
                     {t.isGuestbookSignature ? ' (guestbook)' : ''}
                   </p>
                   <FormattedText text={t.message} className="mt-2 text-gray-700" />
-                  <div className="mt-4">
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button onClick={() => handleModerate('tribute', t.id, 'rejected')} className="btn-ghost text-xs text-red-600">Hide</button>
                     <button onClick={() => handleDelete('tribute', t.id, 'tribute')} className="btn-ghost text-xs text-red-600">Delete</button>
                   </div>
                 </div>
               ))}
               {approvedStories.map((s) => (
                 <div key={s.id} className="card">
-                  <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}</p>
+                  <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}{forPerson(s.honoreeId)}</p>
                   <FormattedText text={s.body} className="mt-2 text-gray-700" />
-                  <div className="mt-4">
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button onClick={() => handleModerate('story', s.id, 'rejected')} className="btn-ghost text-xs text-red-600">Hide</button>
                     <button onClick={() => handleDelete('story', s.id, 'story')} className="btn-ghost text-xs text-red-600">Delete</button>
                   </div>
                 </div>
@@ -256,7 +274,7 @@ export function AdminDashboard() {
                 <h3 className="font-serif text-xl font-semibold">Rejected</h3>
                 {rejectedTributes.map((t) => (
                   <div key={t.id} className="card opacity-80">
-                    <p className="text-sm font-medium text-memorial-700">Tribute from {t.authorName}</p>
+                    <p className="text-sm font-medium text-memorial-700">Tribute from {t.authorName}{forPerson(t.honoreeId)}</p>
                     <FormattedText text={t.message} className="mt-2 text-gray-700" />
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button onClick={() => handleModerate('tribute', t.id, 'approved')} className="btn-primary text-xs">Approve</button>
@@ -267,7 +285,7 @@ export function AdminDashboard() {
                 ))}
                 {rejectedStories.map((s) => (
                   <div key={s.id} className="card opacity-80">
-                    <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}</p>
+                    <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}{forPerson(s.honoreeId)}</p>
                     <FormattedText text={s.body} className="mt-2 text-gray-700" />
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button onClick={() => handleModerate('story', s.id, 'approved')} className="btn-primary text-xs">Approve</button>
@@ -284,7 +302,7 @@ export function AdminDashboard() {
                 <h3 className="font-serif text-xl font-semibold">Deleted</h3>
                 {deletedTributes.map((t) => (
                   <div key={t.id} className="card opacity-80">
-                    <p className="text-sm font-medium text-memorial-700">Tribute from {t.authorName}</p>
+                    <p className="text-sm font-medium text-memorial-700">Tribute from {t.authorName}{forPerson(t.honoreeId)}</p>
                     <FormattedText text={t.message} className="mt-2 text-gray-700" />
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button onClick={() => handleModerate('tribute', t.id, 'approved')} className="btn-primary text-xs">Approve</button>
@@ -294,7 +312,7 @@ export function AdminDashboard() {
                 ))}
                 {deletedStories.map((s) => (
                   <div key={s.id} className="card opacity-80">
-                    <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}</p>
+                    <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}{forPerson(s.honoreeId)}</p>
                     <FormattedText text={s.body} className="mt-2 text-gray-700" />
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button onClick={() => handleModerate('story', s.id, 'approved')} className="btn-primary text-xs">Approve</button>
@@ -312,7 +330,7 @@ export function AdminDashboard() {
             <div>
               <h2 className="font-serif text-2xl font-semibold">Photo moderation</h2>
               <p className="mt-1 text-sm text-gray-500">
-                Guest uploads stay hidden until approved. {data.pendingPhotos.length} pending.
+                New photos appear in the gallery immediately. Hide any that are inappropriate.
               </p>
             </div>
 

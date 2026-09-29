@@ -16,7 +16,7 @@ const TOOLS: Tool[] = [
   {
     toolSpec: {
       name: 'get_memorial_overview',
-      description: 'Get her full name, maiden name, dates, tribute, and obituary. Use for “who was she” and general identity questions.',
+      description: 'Get both people being remembered: names, dates, tributes, and obituaries. Use for who they were and general identity questions.',
       inputSchema: { json: { type: 'object', properties: {} } },
     },
   },
@@ -24,7 +24,7 @@ const TOOLS: Tool[] = [
     toolSpec: {
       name: 'get_biography',
       description:
-        'Get biography sections entered by the family. Topics: childhood, education, faith, accomplishments, qualities, quotes, career. Omit topic to return every section. Use for who she was, where she grew up, and her life story.',
+        'Get biography sections entered by the family for each person. Topics: childhood, education, faith, accomplishments, qualities, quotes, career. Omit topic to return every section.',
       inputSchema: {
         json: {
           type: 'object',
@@ -144,6 +144,10 @@ function searchRecords(query: string, ctx: Record<string, unknown>) {
   };
 
   const memorial = ctx.memorial as Record<string, unknown> | undefined;
+  for (const honoree of asRecords(ctx.honorees)) {
+    const link = `/legacy?person=${honoree.slug ?? ''}`;
+    push('honoree', String(honoree.fullName), `${honoree.fullName} ${honoree.maidenName ?? ''} ${honoree.shortTribute ?? ''} ${honoree.obituaryHtml ?? ''}`, link);
+  }
   push('obituary', 'Obituary', memorial?.obituaryHtml, '/legacy');
   push('tribute', 'Tribute', memorial?.shortTribute, '/');
   for (const section of asRecords(ctx.biographySections)) {
@@ -166,13 +170,19 @@ function executeTool(name: string, input: Record<string, unknown>, ctx: Record<s
   switch (name) {
     case 'get_memorial_overview':
       return {
-        fullName: memorial?.fullName,
-        maidenName: memorial?.maidenName,
-        bornOn: memorial?.bornOn,
-        diedOn: memorial?.diedOn,
+        siteTitle: memorial?.fullName,
         tagline: memorial?.tagline,
-        shortTribute: memorial?.shortTribute,
-        obituary: stripHtml(memorial?.obituaryHtml),
+        honorees: asRecords(ctx.honorees).map((honoree) => ({
+          fullName: honoree.fullName,
+          maidenName: honoree.maidenName,
+          bornOn: honoree.bornOn,
+          diedOn: honoree.diedOn,
+          tagline: honoree.tagline,
+          shortTribute: honoree.shortTribute,
+          anniversaryLine: honoree.anniversaryLine,
+          obituary: stripHtml(honoree.obituaryHtml),
+          link: `/legacy?person=${honoree.slug ?? ''}`,
+        })),
         link: '/legacy',
       };
     case 'get_funeral_details': {
@@ -190,6 +200,7 @@ function executeTool(name: string, input: Record<string, unknown>, ctx: Record<s
         : sections;
       return {
         sections: filtered.map((section) => ({
+          honoreeId: section.honoreeId,
           kind: section.kind,
           heading: section.heading,
           body: section.body,
@@ -267,16 +278,18 @@ export const handler: Handler = async (event) => {
     }
 
     const memorial = ctx.memorial as Record<string, unknown> | undefined;
-    const systemPrompt = `You are ${aiSettings?.assistantName ?? 'Memorial Guide'}, a warm and respectful assistant for the memorial website of ${memorial?.fullName ?? 'the deceased'}.
+    const systemPrompt = `You are ${aiSettings?.assistantName ?? 'Memorial Guide'}, a warm and respectful assistant for the joint memorial of ${memorial?.fullName ?? 'Mami Christiana Enanga Besong and Hilary Akem Oben'}.
 ${aiSettings?.persona ?? 'Speak with compassion and brevity.'}
-You have tools that read live memorial records from the database (biography, family, funeral, knowledge).
-Always call tools before answering questions about her life, family, childhood, children, grandchildren, or the funeral.
-For “who was she” / tell me about her: call get_memorial_overview and get_biography.
+Two people are remembered: Mami Christiana Enanga Besong and Hilary Akem Oben. Answer about the person the visitor asks about. If they do not name someone, include both when the question is about who is being remembered.
+You have tools that read live memorial records from the database (honorees, biography, family, funeral, knowledge).
+Always call tools before answering questions about their lives, family, childhood, children, grandchildren, or the funeral.
+For who someone was: call get_memorial_overview and get_biography.
 For children or grandchildren: call get_family. Never invent a number. If childCount is 0, say an exact count is not recorded and share what the family list and biography do say.
-For where she grew up or childhood: call get_biography with topic childhood and get_timeline.
+For upbringing or childhood: call get_biography with topic childhood and get_timeline.
 If those records do not name a town or country of upbringing, say that is not recorded. Do not infer a hometown from where relatives live now.
+The funeral programme is joint, from 7 to 21 November 2026, with Mami’s burial on 14 November in Limbola and Hilary’s service and burial on 17 November in Kembong Village.
 Only use tool results. If tools return nothing, say so and suggest contacting the family.
-Include relevant page links from tool results when helpful. Valid paths are /, /legacy, /funeral, /family, /tributes, /donations, /memories, and /gallery.
+Include relevant page links from tool results when helpful. Valid paths are /, /legacy, /funeral, /family, /tributes, /donations, /memories, and /gallery. Legacy links may include ?person= followed by a honoree slug.
 Reply in plain text or markdown. Do not use XML tags such as thinking or response.`;
 
     const messages: Message[] = [{ role: 'user', content: [{ text: message }] }];

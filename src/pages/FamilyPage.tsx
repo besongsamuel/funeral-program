@@ -75,7 +75,7 @@ export function FamilyPage() {
       <section className="page-banner">
         <div className="container-memorial px-4 text-center">
           <h1 className="font-serif text-4xl font-bold">Family</h1>
-          <p className="mt-3 text-memorial-200">Those who loved {data.memorial.fullName} most</p>
+          <p className="mt-3 text-memorial-200">Those who loved them most</p>
         </div>
       </section>
 

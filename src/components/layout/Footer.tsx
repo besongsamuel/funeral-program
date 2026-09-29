@@ -20,9 +20,15 @@ export function Footer() {
                 {memorial.fullName}
               </span>
             </div>
-            <p className="text-sm text-memorial-300">
-              {formatDate(memorial.bornOn)} – {formatDate(memorial.diedOn)}
-            </p>
+            <div className="space-y-3 text-sm text-memorial-300">
+              {data.honorees.map((honoree) => (
+                <p key={honoree.id}>
+                  <span className="text-white">{honoree.fullName}</span>
+                  <br />
+                  {formatDate(honoree.bornOn)} – {formatDate(honoree.diedOn)}
+                </p>
+              ))}
+            </div>
             {memorial.tagline && (
               <p className="mt-2 text-sm italic text-memorial-400">{memorial.tagline}</p>
             )}

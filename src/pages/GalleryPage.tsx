@@ -4,6 +4,7 @@ import Lightbox from 'yet-another-react-lightbox';
 import 'yet-another-react-lightbox/styles.css';
 import { motion } from 'framer-motion';
 import { useMemorial } from '@/hooks/useMemorial';
+import { honoreeName } from '@/lib/honorees';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export function GalleryPage() {
@@ -14,7 +15,7 @@ export function GalleryPage() {
 
   if (!data) return null;
 
-  const { galleryAlbums, galleryPhotos, memorial } = data;
+  const { galleryAlbums, galleryPhotos, honorees } = data;
   const albumsWithPhotos = galleryAlbums.filter((album) =>
     galleryPhotos.some((photo) => photo.albumId === album.id),
   );
@@ -31,7 +32,7 @@ export function GalleryPage() {
           <h1 className="font-serif text-4xl font-bold">Gallery</h1>
           <p className="mt-3 text-memorial-200">Moments captured through the years</p>
           <Link to="/share-photos" className="btn-secondary-dark mt-6 inline-flex min-h-11 touch-manipulation">
-            Share a photo of {memorial.fullName.split(' ').slice(0, 2).join(' ')}
+            Share a photo
           </Link>
         </div>
       </section>
@@ -78,13 +79,18 @@ export function GalleryPage() {
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.05 }}
                   onClick={() => setLightboxIndex(i)}
-                  className="group aspect-square overflow-hidden rounded-xl touch-manipulation"
+                  className="group relative aspect-square overflow-hidden rounded-xl touch-manipulation"
                 >
                   <img
                     src={photo.url}
                     alt={photo.caption ?? ''}
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
                   />
+                  {honoreeName(honorees, photo.honoreeId) && (
+                    <span className="absolute inset-x-0 bottom-0 bg-memorial-950/70 px-2 py-1 text-left text-xs text-white">
+                      {honoreeName(honorees, photo.honoreeId)}
+                    </span>
+                  )}
                 </motion.button>
               ))}
             </div>
