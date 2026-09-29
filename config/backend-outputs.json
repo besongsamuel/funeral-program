@@ -229,6 +229,186 @@
             "sortKeyFieldNames": []
           }
         },
+        "Honoree": {
+          "name": "Honoree",
+          "fields": {
+            "id": {
+              "name": "id",
+              "isArray": false,
+              "type": "ID",
+              "isRequired": true,
+              "attributes": []
+            },
+            "memorialId": {
+              "name": "memorialId",
+              "isArray": false,
+              "type": "ID",
+              "isRequired": true,
+              "attributes": []
+            },
+            "slug": {
+              "name": "slug",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true,
+              "attributes": []
+            },
+            "fullName": {
+              "name": "fullName",
+              "isArray": false,
+              "type": "String",
+              "isRequired": true,
+              "attributes": []
+            },
+            "maidenName": {
+              "name": "maidenName",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "portraitUrl": {
+              "name": "portraitUrl",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "bornOn": {
+              "name": "bornOn",
+              "isArray": false,
+              "type": "AWSDate",
+              "isRequired": true,
+              "attributes": []
+            },
+            "diedOn": {
+              "name": "diedOn",
+              "isArray": false,
+              "type": "AWSDate",
+              "isRequired": true,
+              "attributes": []
+            },
+            "tagline": {
+              "name": "tagline",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "shortTribute": {
+              "name": "shortTribute",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "obituaryHtml": {
+              "name": "obituaryHtml",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "anniversaryLine": {
+              "name": "anniversaryLine",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "sortOrder": {
+              "name": "sortOrder",
+              "isArray": false,
+              "type": "Int",
+              "isRequired": false,
+              "attributes": []
+            },
+            "createdAt": {
+              "name": "createdAt",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": false,
+              "attributes": [],
+              "isReadOnly": true
+            },
+            "updatedAt": {
+              "name": "updatedAt",
+              "isArray": false,
+              "type": "AWSDateTime",
+              "isRequired": false,
+              "attributes": [],
+              "isReadOnly": true
+            }
+          },
+          "syncable": true,
+          "pluralName": "Honorees",
+          "attributes": [
+            {
+              "type": "model",
+              "properties": {}
+            },
+            {
+              "type": "key",
+              "properties": {
+                "name": "honoreesByMemorialIdAndSortOrder",
+                "queryField": "listHonoreeByMemorialIdAndSortOrder",
+                "fields": [
+                  "memorialId",
+                  "sortOrder"
+                ]
+              }
+            },
+            {
+              "type": "auth",
+              "properties": {
+                "rules": [
+                  {
+                    "allow": "public",
+                    "provider": "apiKey",
+                    "operations": [
+                      "read"
+                    ]
+                  },
+                  {
+                    "allow": "public",
+                    "provider": "identityPool",
+                    "operations": [
+                      "read"
+                    ]
+                  },
+                  {
+                    "allow": "private",
+                    "operations": [
+                      "create",
+                      "read",
+                      "update",
+                      "delete"
+                    ]
+                  },
+                  {
+                    "groupClaim": "cognito:groups",
+                    "provider": "userPools",
+                    "allow": "groups",
+                    "operations": [
+                      "create",
+                      "read",
+                      "update",
+                      "delete"
+                    ],
+                    "groups": [
+                      "MemorialAdmin"
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "primaryKeyInfo": {
+            "isCustomPrimaryKey": false,
+            "primaryKeyFieldName": "id",
+            "sortKeyFieldNames": []
+          }
+        },
         "BiographySection": {
           "name": "BiographySection",
           "fields": {
@@ -244,6 +424,13 @@
               "isArray": false,
               "type": "ID",
               "isRequired": true,
+              "attributes": []
+            },
+            "honoreeId": {
+              "name": "honoreeId",
+              "isArray": false,
+              "type": "ID",
+              "isRequired": false,
               "attributes": []
             },
             "kind": {
@@ -384,6 +571,13 @@
               "isArray": false,
               "type": "ID",
               "isRequired": true,
+              "attributes": []
+            },
+            "honoreeId": {
+              "name": "honoreeId",
+              "isArray": false,
+              "type": "ID",
+              "isRequired": false,
               "attributes": []
             },
             "eventDate": {
@@ -1056,14 +1250,16 @@
                     "allow": "public",
                     "provider": "apiKey",
                     "operations": [
-                      "read"
+                      "read",
+                      "create"
                     ]
                   },
                   {
                     "allow": "public",
                     "provider": "identityPool",
                     "operations": [
-                      "read"
+                      "read",
+                      "create"
                     ]
                   },
                   {
@@ -1116,6 +1312,13 @@
               "isRequired": true,
               "attributes": []
             },
+            "honoreeId": {
+              "name": "honoreeId",
+              "isArray": false,
+              "type": "ID",
+              "isRequired": false,
+              "attributes": []
+            },
             "albumId": {
               "name": "albumId",
               "isArray": false,
@@ -1134,6 +1337,22 @@
               "name": "caption",
               "isArray": false,
               "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "authorName": {
+              "name": "authorName",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "status": {
+              "name": "status",
+              "isArray": false,
+              "type": {
+                "enum": "GalleryPhotoStatus"
+              },
               "isRequired": false,
               "attributes": []
             },
@@ -1198,14 +1417,16 @@
                     "allow": "public",
                     "provider": "apiKey",
                     "operations": [
-                      "read"
+                      "read",
+                      "create"
                     ]
                   },
                   {
                     "allow": "public",
                     "provider": "identityPool",
                     "operations": [
-                      "read"
+                      "read",
+                      "create"
                     ]
                   },
                   {
@@ -1256,6 +1477,13 @@
               "isArray": false,
               "type": "ID",
               "isRequired": true,
+              "attributes": []
+            },
+            "honoreeId": {
+              "name": "honoreeId",
+              "isArray": false,
+              "type": "ID",
+              "isRequired": false,
               "attributes": []
             },
             "authorName": {
@@ -1405,6 +1633,13 @@
               "isArray": false,
               "type": "ID",
               "isRequired": true,
+              "attributes": []
+            },
+            "honoreeId": {
+              "name": "honoreeId",
+              "isArray": false,
+              "type": "ID",
+              "isRequired": false,
               "attributes": []
             },
             "authorName": {
@@ -2713,12 +2948,22 @@
             "funeral"
           ]
         },
+        "GalleryPhotoStatus": {
+          "name": "GalleryPhotoStatus",
+          "values": [
+            "pending",
+            "approved",
+            "rejected",
+            "deleted"
+          ]
+        },
         "TributeStatus": {
           "name": "TributeStatus",
           "values": [
             "pending",
             "approved",
-            "rejected"
+            "rejected",
+            "deleted"
           ]
         },
         "StoryStatus": {
@@ -2726,7 +2971,8 @@
           "values": [
             "pending",
             "approved",
-            "rejected"
+            "rejected",
+            "deleted"
           ]
         },
         "MediaItemKind": {
@@ -2787,6 +3033,19 @@
             ]
           },
           "tribute-uploads/*": {
+            "guest": [
+              "get",
+              "list",
+              "write"
+            ],
+            "groupsMemorialAdmin": [
+              "get",
+              "list",
+              "write",
+              "delete"
+            ]
+          },
+          "gallery-uploads/*": {
             "guest": [
               "get",
               "list",

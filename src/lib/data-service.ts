@@ -55,7 +55,8 @@ function withTimeout<T>(promise: Promise<T>, ms: number) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function listAll(model: { list: (args: object) => Promise<any> }, filter: object) {
+async function listAll(model: { list?: (args: object) => Promise<any> } | undefined, filter: object) {
+  if (!model?.list) return [];
   const items: unknown[] = [];
   let nextToken: string | undefined;
   do {
