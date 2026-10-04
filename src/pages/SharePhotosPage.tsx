@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { CheckCircle, ImagePlus, X } from 'lucide-react';
 import { useMemorial } from '@/hooks/useMemorial';
 import { submitGalleryPhotos } from '@/lib/data-service';
+import { assertGalleryMedia, isVideoFile } from '@/lib/media';
 
 const ALBUM_CATEGORIES = [
   'childhood',
@@ -62,6 +63,7 @@ export function SharePhotosPage() {
         key: `${file.name}-${file.size}-${file.lastModified}`,
         name: file.name,
         url: URL.createObjectURL(file),
+        video: isVideoFile(file),
       })),
     [files],
   );
@@ -80,21 +82,30 @@ export function SharePhotosPage() {
 
   const addFiles = (list: FileList | null) => {
     if (!list?.length) return;
-    const next = Array.from(list).filter((file) => file.type.startsWith('image/'));
-    if (!next.length) {
-      setError('Please choose image files only.');
+    const accepted: File[] = [];
+    const problems: string[] = [];
+    for (const file of Array.from(list)) {
+      try {
+        assertGalleryMedia(file);
+        accepted.push(file);
+      } catch (err) {
+        problems.push(err instanceof Error ? err.message : 'That file cannot be uploaded.');
+      }
+    }
+    if (!accepted.length) {
+      setError(problems[0] ?? 'Please choose photos or videos.');
       return;
     }
     setFiles((current) => {
       const seen = new Set(current.map((f) => `${f.name}-${f.size}-${f.lastModified}`));
       const merged = [...current];
-      for (const file of next) {
+      for (const file of accepted) {
         const key = `${file.name}-${file.size}-${file.lastModified}`;
         if (!seen.has(key)) merged.push(file);
       }
       return merged;
     });
-    setError('');
+    setError(problems.join(' '));
   };
 
   const removeFile = (index: number) => {
@@ -103,7 +114,7 @@ export function SharePhotosPage() {
 
   const onSubmit = async (values: SharePhotosForm) => {
     if (!files.length) {
-      setError('Please choose at least one photo.');
+      setError('Please choose at least one photo or video.');
       return;
     }
 
@@ -130,7 +141,7 @@ export function SharePhotosPage() {
       await queryClient.invalidateQueries({ queryKey: ['memorial'] });
       await queryClient.invalidateQueries({ queryKey: ['admin'] });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not upload photos. Please try again.');
+      setError(err instanceof Error ? err.message : 'Could not upload. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -140,13 +151,13 @@ export function SharePhotosPage() {
     <div>
       <section className="page-banner">
         <div className="container-memorial px-4 text-center">
-          <p className="type-intro-on-dark mb-3 text-xs sm:text-sm">Share photos of</p>
+          <p className="type-intro-on-dark mb-3 text-xs sm:text-sm">Share photos and videos of</p>
           <h1 className="type-name-on-dark text-3xl leading-tight sm:text-4xl">{memorial.fullName}</h1>
           {memorial.maidenName && (
             <p className="type-maiden-on-dark mt-1 text-base sm:text-lg">née {memorial.maidenName}</p>
           )}
           <p className="mt-4 text-sm text-memorial-200 sm:text-base">
-            Photos appear in the gallery as soon as you share them.
+            Photos and videos appear in the gallery as soon as you share them.
           </p>
         </div>
       </section>
@@ -159,25 +170,26 @@ export function SharePhotosPage() {
                 <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
                 <h2 className="font-serif text-2xl font-semibold text-memorial-900">Thank you</h2>
                 <p className="text-gray-600">
-                  Your photos are now in the gallery.
+                  Your photos and videos are now in the gallery. Tap a video there to play it.
                 </p>
                 <button
                   type="button"
                   className="btn-primary min-h-12 w-full touch-manipulation"
                   onClick={() => setSubmitted(false)}
                 >
-                  Share more photos
+                  Share more photos or videos
                 </button>
               </div>
             ) : (
               <form className="card space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
                 <div>
                   <h2 className="font-serif text-xl font-semibold text-memorial-900 sm:text-2xl">
-                    Upload photos
+                    Upload photos and videos
                   </h2>
                   <p className="mt-2 text-sm leading-relaxed text-gray-600">
-                    Choose an existing album or create a new one, then add one or more images from
+                    Choose an existing album or create a new one, then add photos or videos from
                     your phone or computer. They appear in the gallery as soon as you submit them.
+                    Videos can be up to 200 MB. MP4 plays on the most devices.
                   </p>
                 </div>
 
@@ -245,11 +257,11 @@ export function SharePhotosPage() {
                 )}
 
                 <div>
-                  <p className="label">Photos</p>
+                  <p className="label">Photos and videos</p>
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/*,video/*"
                     multiple
                     className="hidden"
                     onChange={(event) => {
@@ -264,10 +276,10 @@ export function SharePhotosPage() {
                   >
                     <ImagePlus className="h-8 w-8 text-memorial-800" />
                     <span className="text-base font-medium text-memorial-900">
-                      {files.length ? 'Add more photos' : 'Choose photos'}
+                      {files.length ? 'Add more photos or videos' : 'Choose photos or videos'}
                     </span>
                     <span className="max-w-[16rem] text-xs leading-relaxed text-gray-600">
-                      Tap to open your camera roll or files. You can select multiple images.
+                      Tap to open your camera roll or files. You can select several photos and videos.
                     </span>
                   </button>
 
@@ -275,11 +287,21 @@ export function SharePhotosPage() {
                     <ul className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4">
                       {previews.map((preview, index) => (
                         <li key={preview.key} className="relative aspect-square overflow-hidden rounded-lg bg-gold-50">
-                          <img
-                            src={preview.url}
-                            alt={preview.name}
-                            className="h-full w-full object-cover"
-                          />
+                          {preview.video ? (
+                            <video
+                              src={preview.url}
+                              muted
+                              playsInline
+                              preload="metadata"
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <img
+                              src={preview.url}
+                              alt={preview.name}
+                              className="h-full w-full object-cover"
+                            />
+                          )}
                           <button
                             type="button"
                             aria-label={`Remove ${preview.name}`}
@@ -294,7 +316,7 @@ export function SharePhotosPage() {
                   )}
                   {files.length > 0 && (
                     <p className="mt-2 text-sm text-memorial-700">
-                      {files.length} photo{files.length === 1 ? '' : 's'} selected
+                      {files.length} file{files.length === 1 ? '' : 's'} selected
                     </p>
                   )}
                 </div>
@@ -306,7 +328,7 @@ export function SharePhotosPage() {
                 )}
 
                 <p className="rounded-xl border border-gold-200 bg-gold-50/60 px-3 py-3 text-sm leading-relaxed text-memorial-800">
-                  Photos appear in the gallery as soon as you submit them.
+                  Photos and videos appear in the gallery as soon as you submit them. Open a video in the gallery to play it.
                 </p>
 
                 <button
@@ -314,7 +336,7 @@ export function SharePhotosPage() {
                   className="btn-primary min-h-12 w-full touch-manipulation text-base"
                   disabled={submitting}
                 >
-                  {submitting ? 'Uploading…' : 'Submit photos'}
+                  {submitting ? 'Uploading…' : 'Submit'}
                 </button>
               </form>
             )}

@@ -15,6 +15,7 @@ import {
 } from '@/lib/moderation-api';
 import { getModerationUrl } from '@/lib/amplify';
 import { FormattedText } from '@/components/ui/FormattedText';
+import { MediaPreview } from '@/components/ui/MediaPreview';
 
 const CODE_PATTERN = /^[A-Z0-9]{4}$/;
 
@@ -288,11 +289,14 @@ export function ModeratePage() {
     <div key={item.id} className={`card ${mode === 'rejected' || mode === 'deleted' ? 'opacity-80' : ''}`}>
       <div className="flex flex-col gap-4 sm:flex-row">
         {item.url && (
-          <img
-            src={item.url}
-            alt={item.caption ?? 'Submitted photo'}
-            className="h-44 w-full rounded-xl object-cover sm:h-28 sm:w-28 sm:shrink-0"
-          />
+          <div className="h-44 w-full overflow-hidden rounded-xl bg-memorial-950 sm:h-36 sm:w-64 sm:shrink-0">
+            <MediaPreview
+              url={item.url}
+              alt={item.caption ?? 'Submitted photo or video'}
+              controls
+              className="h-full w-full object-contain"
+            />
+          </div>
         )}
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-memorial-700">

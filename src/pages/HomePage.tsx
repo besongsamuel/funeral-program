@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { BookOpen, Calendar, Heart, Flame } from 'lucide-react';
 import { useMemorial } from '@/hooks/useMemorial';
+import { MediaPreview } from '@/components/ui/MediaPreview';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { FormattedText } from '@/components/ui/FormattedText';
 import { Countdown } from '@/components/ui/Countdown';
@@ -177,7 +178,13 @@ export function HomePage() {
                 transition={{ delay: i * 0.1 }}
                 className="aspect-square overflow-hidden rounded-xl"
               >
-                <img src={photo.url} alt={photo.caption ?? ''} className="h-full w-full object-cover transition-transform hover:scale-110" />
+                <Link to="/gallery" className="block h-full w-full" aria-label={photo.caption || 'Open gallery'}>
+                  <MediaPreview
+                    url={photo.url}
+                    alt={photo.caption ?? ''}
+                    className="h-full w-full object-cover transition-transform hover:scale-110"
+                  />
+                </Link>
               </motion.div>
             ))}
           </div>

@@ -17,6 +17,7 @@ import { exportSubmissionsCsv } from '@/lib/export-submissions-csv';
 import { AdminContent } from './AdminContent';
 import { AdminAi, AdminProfile } from './AdminSettings';
 import { FormattedText } from '@/components/ui/FormattedText';
+import { MediaPreview } from '@/components/ui/MediaPreview';
 import { Download } from 'lucide-react';
 
 type Tab = 'profile' | 'content' | 'moderation' | 'photos' | 'ai' | 'publish';
@@ -107,11 +108,14 @@ export function AdminDashboard() {
   ) => (
     <div key={photo.id} className={`card ${actions === 'rejected' || actions === 'deleted' ? 'opacity-80' : ''}`}>
       <div className="flex flex-col gap-4 sm:flex-row">
-        <img
-          src={photo.url}
-          alt={photo.caption ?? 'Submitted photo'}
-          className="h-40 w-full rounded-xl object-cover sm:h-28 sm:w-28 sm:shrink-0"
-        />
+        <div className="h-44 w-full overflow-hidden rounded-xl bg-memorial-950 sm:h-36 sm:w-64 sm:shrink-0">
+          <MediaPreview
+            url={photo.url}
+            alt={photo.caption ?? 'Submitted photo or video'}
+            controls
+            className="h-full w-full object-contain"
+          />
+        </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-memorial-700">
             {photo.authorName ? `From ${photo.authorName}` : 'Guest submission'}

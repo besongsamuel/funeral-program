@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { isAmplifyConfigured } from '@/lib/amplify';
 import { adminRemove, adminSave, isDraftId, newDraftId } from '@/lib/admin-api';
+import { MediaPreview } from '@/components/ui/MediaPreview';
 import { uploadGalleryImages } from '@/lib/storage';
 import type {
   Honoree,
@@ -338,7 +339,7 @@ export function AdminContent({ data, onChanged }: { data: MemorialContext; onCha
                         ])
                       }
                     >
-                      Add photo by URL
+                      Add photo or video by URL
                     </AddButton>
                   </div>
                 )}
@@ -725,7 +726,7 @@ function AlbumPhotoUploader({
   const handleFiles = async (fileList: FileList | null) => {
     if (!fileList?.length) return;
     if (!connected) {
-      setMessage('Connect Amplify Storage to upload images.');
+      setMessage('Connect Amplify Storage to upload photos and videos.');
       return;
     }
 
@@ -755,7 +756,7 @@ function AlbumPhotoUploader({
         });
         saved += 1;
       }
-      setMessage(`Uploaded ${saved} image${saved === 1 ? '' : 's'}.`);
+      setMessage(`Uploaded ${saved} file${saved === 1 ? '' : 's'}.`);
       setProgress('');
       if (inputRef.current) inputRef.current.value = '';
       await onUploaded();
@@ -771,9 +772,9 @@ function AlbumPhotoUploader({
     <div className="rounded-xl border border-dashed border-gold-300 bg-gold-50/40 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-sm font-medium text-memorial-900">Upload images to S3</p>
+          <p className="text-sm font-medium text-memorial-900">Upload photos and videos to S3</p>
           <p className="mt-1 text-xs text-gray-600">
-            Select one or many photos. They are stored under <code>memorial-media/</code> and saved to this album.
+            Select one or many photos or videos (up to 200 MB each). They are stored under <code>memorial-media/</code> and saved to this album.
           </p>
         </div>
         <button
@@ -782,13 +783,13 @@ function AlbumPhotoUploader({
           disabled={uploading || !connected}
           onClick={() => inputRef.current?.click()}
         >
-          {uploading ? 'Uploading…' : 'Choose images'}
+          {uploading ? 'Uploading…' : 'Choose photos or videos'}
         </button>
       </div>
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept="image/*,video/*"
         multiple
         className="hidden"
         onChange={(event) => {
@@ -848,7 +849,7 @@ function PhotoForm({ item, onChanged }: { item: GalleryPhoto; onChanged: () => P
     try {
       const [uploaded] = await uploadGalleryImages([file], item.memorialId, item.albumId);
       form.set('url', uploaded.url);
-      setUploadMessage('Image uploaded. Save to keep this URL.');
+      setUploadMessage('File uploaded. Save to keep this URL.');
       if (fileRef.current) fileRef.current.value = '';
     } catch (error) {
       setUploadMessage(error instanceof Error ? error.message : 'Upload failed.');
@@ -862,7 +863,7 @@ function PhotoForm({ item, onChanged }: { item: GalleryPhoto; onChanged: () => P
       await adminSave('GalleryPhoto', { ...values, status: values.status ?? 'approved' });
       await onChanged();
     })}>
-      <Field label="Image URL">
+      <Field label="Photo or video URL">
         <TextInput value={form.draft.url} onChange={(e) => form.set('url', e.target.value)} required />
       </Field>
       <div className="flex flex-wrap items-center gap-3">
@@ -877,7 +878,7 @@ function PhotoForm({ item, onChanged }: { item: GalleryPhoto; onChanged: () => P
         <input
           ref={fileRef}
           type="file"
-          accept="image/*"
+          accept="image/*,video/*"
           className="hidden"
           onChange={(event) => {
             void replaceImage(event.target.files);
@@ -888,7 +889,11 @@ function PhotoForm({ item, onChanged }: { item: GalleryPhoto; onChanged: () => P
       <Field label="Caption">
         <TextInput value={form.draft.caption ?? ''} onChange={(e) => form.set('caption', e.target.value)} />
       </Field>
-      {form.draft.url && <img src={form.draft.url} alt="" className="h-24 rounded-lg object-cover" />}
+      {form.draft.url && (
+        <div className="h-40 max-w-xs overflow-hidden rounded-lg bg-memorial-950">
+          <MediaPreview url={form.draft.url} alt="" controls className="h-full w-full object-contain" />
+        </div>
+      )}
       <SaveBar
         saving={form.saving}
         message={form.message}

@@ -1,6 +1,7 @@
 import { generateClient } from 'aws-amplify/data';
 import { demoContext, MEMORIAL_ID, MEMORIAL_SLUG } from './demo-data';
 import { isAmplifyConfigured } from './amplify';
+import { assertGalleryMedia, rememberMediaKind } from './media';
 import { uploadGuestGalleryImages } from './storage';
 import type {
   MemorialContext,
@@ -234,7 +235,8 @@ export async function submitGalleryPhotos(input: {
   files: FileList | File[];
 }): Promise<GalleryPhoto[]> {
   const files = Array.from(input.files);
-  if (!files.length) throw new Error('Please choose at least one image.');
+  if (!files.length) throw new Error('Please choose at least one photo or video.');
+  const kinds = files.map((file) => assertGalleryMedia(file));
 
   const client = getPublicClient();
   const authorName = input.authorName?.trim() ?? '';
@@ -305,16 +307,20 @@ export async function submitGalleryPhotos(input: {
   const album = await resolveAlbum();
 
   if (!client) {
-    const created: GalleryPhoto[] = files.map((file, index) => ({
-      id: `gp-${Date.now()}-${index}`,
-      memorialId: MEMORIAL_ID,
-      albumId: album.id,
-      url: URL.createObjectURL(file),
-      caption: file.name,
-      authorName: authorName || undefined,
-      status: 'approved' as const,
-      sortOrder: index + 1,
-    }));
+    const created: GalleryPhoto[] = files.map((file, index) => {
+      const url = URL.createObjectURL(file);
+      rememberMediaKind(url, kinds[index] ?? 'image');
+      return {
+        id: `gp-${Date.now()}-${index}`,
+        memorialId: MEMORIAL_ID,
+        albumId: album.id,
+        url,
+        caption: file.name,
+        authorName: authorName || undefined,
+        status: 'approved' as const,
+        sortOrder: index + 1,
+      };
+    });
     localPhotos = [...created, ...localPhotos];
     return created;
   }

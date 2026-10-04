@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Lightbox from 'yet-another-react-lightbox';
+import Video from 'yet-another-react-lightbox/plugins/video';
 import 'yet-another-react-lightbox/styles.css';
 import { motion } from 'framer-motion';
+import { MediaPreview } from '@/components/ui/MediaPreview';
 import { useMemorial } from '@/hooks/useMemorial';
 import { honoreeName } from '@/lib/honorees';
+import { isVideoUrl, videoMimeType } from '@/lib/media';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export function GalleryPage() {
@@ -23,7 +26,18 @@ export function GalleryPage() {
     ? galleryPhotos.filter((p) => p.albumId === activeAlbum)
     : galleryPhotos;
 
-  const slides = filtered.map((p) => ({ src: p.url, title: p.caption }));
+  const slides = filtered.map((p) =>
+    isVideoUrl(p.url)
+      ? {
+          type: 'video' as const,
+          title: p.caption,
+          autoPlay: true,
+          controls: true,
+          playsInline: true,
+          sources: [{ src: p.url, type: videoMimeType(p.url) }],
+        }
+      : { src: p.url, title: p.caption },
+  );
 
   return (
     <div>
@@ -32,7 +46,7 @@ export function GalleryPage() {
           <h1 className="font-serif text-4xl font-bold">Gallery</h1>
           <p className="mt-3 text-memorial-200">Moments captured through the years</p>
           <Link to="/share-photos" className="btn-secondary-dark mt-6 inline-flex min-h-11 touch-manipulation">
-            Share a photo
+            Share a photo or video
           </Link>
         </div>
       </section>
@@ -63,7 +77,7 @@ export function GalleryPage() {
 
           {filtered.length === 0 ? (
             <p className="text-center text-gray-600">
-              No photos yet.{' '}
+              No photos or videos yet.{' '}
               <Link to="/share-photos" className="text-memorial-800 underline decoration-gold-400 underline-offset-2">
                 Be the first to share one
               </Link>
@@ -79,10 +93,11 @@ export function GalleryPage() {
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.05 }}
                   onClick={() => setLightboxIndex(i)}
+                  aria-label={isVideoUrl(photo.url) ? `Play ${photo.caption || 'video'}` : photo.caption || 'View photo'}
                   className="group relative aspect-square overflow-hidden rounded-xl touch-manipulation"
                 >
-                  <img
-                    src={photo.url}
+                  <MediaPreview
+                    url={photo.url}
                     alt={photo.caption ?? ''}
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
                   />
@@ -99,10 +114,12 @@ export function GalleryPage() {
       </section>
 
       <Lightbox
+        plugins={[Video]}
         open={lightboxIndex >= 0}
         close={() => setLightboxIndex(-1)}
         index={lightboxIndex}
         slides={slides}
+        video={{ autoPlay: true, controls: true, playsInline: true }}
       />
     </div>
   );
