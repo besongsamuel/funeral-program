@@ -146,7 +146,7 @@ function searchRecords(query: string, ctx: Record<string, unknown>) {
   const memorial = ctx.memorial as Record<string, unknown> | undefined;
   for (const honoree of asRecords(ctx.honorees)) {
     const link = `/legacy?person=${honoree.slug ?? ''}`;
-    push('honoree', String(honoree.fullName), `${honoree.fullName} ${honoree.maidenName ?? ''} ${honoree.shortTribute ?? ''} ${honoree.obituaryHtml ?? ''}`, link);
+    push('honoree', String(honoree.fullName), `${honoree.fullName} ${honoree.maidenName ?? ''} ${honoree.shortTribute ?? ''} ${honoree.tributePreface ?? ''} ${honoree.obituaryHtml ?? ''}`, link);
   }
   push('obituary', 'Obituary', memorial?.obituaryHtml, '/legacy');
   push('tribute', 'Tribute', memorial?.shortTribute, '/');
@@ -179,6 +179,7 @@ function executeTool(name: string, input: Record<string, unknown>, ctx: Record<s
           diedOn: honoree.diedOn,
           tagline: honoree.tagline,
           shortTribute: honoree.shortTribute,
+          tributePreface: honoree.tributePreface,
           anniversaryLine: honoree.anniversaryLine,
           obituary: stripHtml(honoree.obituaryHtml),
           link: `/legacy?person=${honoree.slug ?? ''}`,

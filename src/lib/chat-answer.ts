@@ -36,6 +36,7 @@ function describeHonoree(honoree: Honoree, ctx: MemorialContext) {
   return [
     `${name}, sunrise ${honoree.bornOn}, sunset ${honoree.diedOn}.`,
     honoree.shortTribute,
+    honoree.tributePreface,
     sections,
     stripHtml(honoree.obituaryHtml),
     `[Read the story](/legacy?person=${honoree.slug})`,

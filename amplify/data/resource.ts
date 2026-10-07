@@ -44,6 +44,7 @@ const schema = a.schema({
       diedOn: a.date().required(),
       tagline: a.string(),
       shortTribute: a.string(),
+      tributePreface: a.string(),
       obituaryHtml: a.string(),
       anniversaryLine: a.string(),
       sortOrder: a.integer().default(0),

@@ -28,6 +28,7 @@ export interface Honoree {
   diedOn: string;
   tagline?: string;
   shortTribute?: string;
+  tributePreface?: string;
   obituaryHtml?: string;
   anniversaryLine?: string;
   sortOrder: number;

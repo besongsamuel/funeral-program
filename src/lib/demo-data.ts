@@ -36,6 +36,15 @@ export const demoContext: MemorialContext = {
       tagline: 'Her legacy lives on in us all.',
       shortTribute:
         'A beloved mother, a cherished grandmother, a pillar of family, a legacy forever. Her kindness lives on. Her love endures. Her legacy inspires us all.',
+      tributePreface: `We gather these tributes to honor a remarkable matriarch who lived for 90 beautiful years. Mami Christiana Enanga was the true definition of a homebuilder, opening her doors so widely that her household warmly sheltered at least 20 individuals at any given time.
+
+Though born Bimbia, she embraced her husband’s culture with profound love, speaking the Ejagham dialect with the fluency of a native.
+
+In a large household alongside junior wives, she anchored her family with grace, remaining fiercely faithful and steadfast in her marriage. Her enduring legacy of love, unity, and strength lives on through the family and community.
+
+As you read through these pages, we hope you find comfort in the shared stories, the laughter preserved in ink, and the reminder that Mami Enanga's legacy lives on through each of us.
+
+Thank you to everyone who contributed their cherished memories to make this tribute possible.`,
       anniversaryLine: '90 Years of Grace, Love & Legacy',
       obituaryHtml: `<p class="obituary-theme">90 Years of Grace • Faith • Family • Culture • Love • Legacy</p>
 <p>Celebrating the life and legacy of Mami Christiana Enanga Besong, née Njie Nambeke.</p>
@@ -59,6 +68,11 @@ export const demoContext: MemorialContext = {
       tagline: 'A beautiful soul has departed, but his memory lives on.',
       shortTribute:
         'He will be remembered for his kindness, generosity, warm heart and the positive impact he made in the lives of many.',
+      tributePreface: `On the following pages, we honor the remarkable life of our beloved brother, Hilary Akem Oben, who passed away too soon at the age of 55. His sudden departure comes just one month after the devastating loss of our matriarch, leaving our hearts doubly broken.
+
+Hilary was a pillar of devotion; in Mami's final days, he was the one who tenderly took Mom to the hospital, caring for her until her passing. Now, they are reunited in eternity.
+
+As we share these tributes, we celebrate Hilary’s profound kindness, his unwavering strength, and the deep love he gave to our family.`,
       obituaryHtml: `<p>With deep sorrow, we announce the passing of our beloved Hilary Akem Oben, who peacefully passed away on Friday, 18 September 2026, in Limbe, Cameroon.</p>
 <p>He will be remembered for his kindness, generosity, warm heart and the positive impact he made in the lives of many.</p>
 <blockquote>

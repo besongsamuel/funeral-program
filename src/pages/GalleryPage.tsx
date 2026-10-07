@@ -4,27 +4,33 @@ import Lightbox from 'yet-another-react-lightbox';
 import Video from 'yet-another-react-lightbox/plugins/video';
 import 'yet-another-react-lightbox/styles.css';
 import { motion } from 'framer-motion';
+import { HonoreePicker } from '@/components/ui/HonoreePicker';
 import { MediaPreview } from '@/components/ui/MediaPreview';
-import { useMemorial } from '@/hooks/useMemorial';
-import { honoreeName } from '@/lib/honorees';
+import { TributePreface } from '@/components/ui/TributePreface';
+import { useSelectedHonoree } from '@/hooks/useSelectedHonoree';
+import { honoreeName, matchesHonoree } from '@/lib/honorees';
 import { isVideoUrl, videoMimeType } from '@/lib/media';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 export function GalleryPage() {
-  const { data } = useMemorial();
+  const { data, honorees, selected, selectPerson } = useSelectedHonoree();
   const [activeAlbum, setActiveAlbum] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState(-1);
   const reduced = useReducedMotion();
 
   if (!data) return null;
 
-  const { galleryAlbums, galleryPhotos, honorees } = data;
-  const albumsWithPhotos = galleryAlbums.filter((album) =>
-    galleryPhotos.some((photo) => photo.albumId === album.id),
-  );
-  const filtered = activeAlbum
-    ? galleryPhotos.filter((p) => p.albumId === activeAlbum)
+  const { galleryAlbums, galleryPhotos } = data;
+  const personPhotos = selected
+    ? galleryPhotos.filter((photo) => matchesHonoree(photo.honoreeId, selected, honorees))
     : galleryPhotos;
+  const albumsWithPhotos = galleryAlbums.filter((album) =>
+    personPhotos.some((photo) => photo.albumId === album.id),
+  );
+  const albumIsVisible = albumsWithPhotos.some((album) => album.id === activeAlbum);
+  const filtered = activeAlbum && albumIsVisible
+    ? personPhotos.filter((photo) => photo.albumId === activeAlbum)
+    : personPhotos;
 
   const slides = filtered.map((p) =>
     isVideoUrl(p.url)
@@ -45,6 +51,15 @@ export function GalleryPage() {
         <div className="container-memorial px-4 text-center">
           <h1 className="font-serif text-4xl font-bold">Gallery</h1>
           <p className="mt-3 text-memorial-200">Moments captured through the years</p>
+          <div className="mt-8">
+            <HonoreePicker
+              honorees={honorees}
+              selectedSlug={selected?.slug ?? null}
+              onSelect={selectPerson}
+              allowAll
+              allLabel="All photos"
+            />
+          </div>
           <Link to="/share-photos" className="btn-secondary-dark mt-6 inline-flex min-h-11 touch-manipulation">
             Share a photo or video
           </Link>
@@ -53,6 +68,13 @@ export function GalleryPage() {
 
       <section className="section-padding">
         <div className="container-memorial">
+          {selected && (
+            <TributePreface
+              text={selected.tributePreface}
+              crossHref={`/tributes?person=${selected.slug}`}
+              crossLabel="Read tributes"
+            />
+          )}
           <div className="mb-8 flex flex-wrap justify-center gap-2">
             <button
               onClick={() => setActiveAlbum(null)}

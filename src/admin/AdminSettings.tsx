@@ -75,6 +75,9 @@ function HonoreeForm({ honoree, onChanged }: { honoree: Honoree; onChanged: () =
       <Field label="Short tribute">
         <TextArea rows={4} value={form.draft.shortTribute ?? ''} onChange={(e) => form.set('shortTribute', e.target.value)} />
       </Field>
+      <Field label="Tribute preface">
+        <TextArea rows={8} value={form.draft.tributePreface ?? ''} onChange={(e) => form.set('tributePreface', e.target.value)} />
+      </Field>
       <Field label="Obituary HTML">
         <TextArea rows={6} value={form.draft.obituaryHtml ?? ''} onChange={(e) => form.set('obituaryHtml', e.target.value)} />
       </Field>

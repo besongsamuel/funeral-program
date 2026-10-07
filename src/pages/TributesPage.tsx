@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useSelectedHonoree } from '@/hooks/useSelectedHonoree';
 import { HonoreePicker } from '@/components/ui/HonoreePicker';
+import { TributePreface } from '@/components/ui/TributePreface';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { FormattedText } from '@/components/ui/FormattedText';
 import { submitTribute, submitStory } from '@/lib/data-service';
@@ -149,6 +150,13 @@ export function TributesPage() {
 
       <section className="section-padding">
         <div className="container-memorial">
+          {selected && (
+            <TributePreface
+              text={selected.tributePreface}
+              crossHref={`/gallery?person=${selected.slug}`}
+              crossLabel="See photos"
+            />
+          )}
           <div className="mb-8 flex justify-center gap-2">
             {(['tributes', 'guestbook', 'story'] as const).map((t) => (
               <button
