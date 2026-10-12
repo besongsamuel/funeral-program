@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useSelectedHonoree } from '@/hooks/useSelectedHonoree';
@@ -11,27 +11,13 @@ import { SubmittedAt } from '@/components/ui/SubmittedAt';
 import { submitTribute, submitStory } from '@/lib/data-service';
 import { honoreeName, matchesHonoree } from '@/lib/honorees';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { RelationshipAutocomplete } from '@/components/ui/RelationshipAutocomplete';
 import { Heart, BookOpen, CheckCircle } from 'lucide-react';
-
-const RELATIONSHIP_OPTIONS = [
-  'Family',
-  'Child',
-  'Grandchild',
-  'Sibling',
-  'Relative',
-  'Friend',
-  'Colleague',
-  'Neighbor',
-  'Church family',
-] as const;
-
-const OTHER_RELATIONSHIP = 'Other';
 
 interface TributeForm {
   honoreeId: string;
   authorName: string;
   relationship: string;
-  otherRelationship: string;
   message: string;
   isGuestbookSignature: boolean;
 }
@@ -52,10 +38,9 @@ export function TributesPage() {
   const reduced = useReducedMotion();
 
   const tributeForm = useForm<TributeForm>({
-    defaultValues: { honoreeId: '', isGuestbookSignature: false, relationship: '', otherRelationship: '' },
+    defaultValues: { honoreeId: '', isGuestbookSignature: false, relationship: '' },
   });
   const storyForm = useForm<StoryForm>({ defaultValues: { honoreeId: '' } });
-  const selectedRelationship = tributeForm.watch('relationship');
 
   useEffect(() => {
     if (!selected) return;
@@ -85,12 +70,7 @@ export function TributesPage() {
 
   const onTributeSubmit = async (form: TributeForm) => {
     if (!formHonoreeId) return;
-    const relationship =
-      tab === 'guestbook'
-        ? undefined
-        : form.relationship === OTHER_RELATIONSHIP
-          ? form.otherRelationship.trim()
-          : form.relationship || undefined;
+    const relationship = tab === 'guestbook' ? undefined : form.relationship.trim() || undefined;
 
     await submitTribute({
       honoreeId: formHonoreeId,
@@ -100,7 +80,7 @@ export function TributesPage() {
       isGuestbookSignature: tab === 'guestbook',
     });
     setSubmitted(true);
-    tributeForm.reset({ honoreeId: formHonoreeId, isGuestbookSignature: false, relationship: '', otherRelationship: '', authorName: '', message: '' });
+    tributeForm.reset({ honoreeId: formHonoreeId, isGuestbookSignature: false, relationship: '', authorName: '', message: '' });
     queryClient.invalidateQueries({ queryKey: ['memorial'] });
   };
 
@@ -232,34 +212,20 @@ export function TributesPage() {
                   <input {...tributeForm.register('authorName', { required: true })} className="input-field" />
                 </div>
                 {tab !== 'guestbook' && (
-                  <div className="space-y-3">
-                    <div>
-                      <label className="label" htmlFor="tribute-relationship">Relationship</label>
-                      <select
-                        id="tribute-relationship"
-                        {...tributeForm.register('relationship')}
-                        className="input-field"
-                      >
-                        <option value="">Select a relationship</option>
-                        {RELATIONSHIP_OPTIONS.map((option) => (
-                          <option key={option} value={option}>{option}</option>
-                        ))}
-                        <option value={OTHER_RELATIONSHIP}>{OTHER_RELATIONSHIP}</option>
-                      </select>
-                    </div>
-                    {selectedRelationship === OTHER_RELATIONSHIP && (
-                      <div>
-                        <label className="label" htmlFor="tribute-other-relationship">Please specify</label>
-                        <input
-                          id="tribute-other-relationship"
-                          {...tributeForm.register('otherRelationship', {
-                            required: selectedRelationship === OTHER_RELATIONSHIP,
-                          })}
-                          className="input-field"
-                          placeholder="Your relationship"
+                  <div>
+                    <label className="label" htmlFor="tribute-relationship">Relationship</label>
+                    <Controller
+                      name="relationship"
+                      control={tributeForm.control}
+                      render={({ field }) => (
+                        <RelationshipAutocomplete
+                          id="tribute-relationship"
+                          value={field.value}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
                         />
-                      </div>
-                    )}
+                      )}
+                    />
                   </div>
                 )}
                 <div>

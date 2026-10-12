@@ -1,0 +1,97 @@
+export const RELATIONSHIP_OPTIONS = [
+  'Family',
+  'Relative',
+  'Spouse',
+  'Husband',
+  'Wife',
+  'Partner',
+  'Fiancé',
+  'Fiancée',
+  'Child',
+  'Son',
+  'Daughter',
+  'Parent',
+  'Father',
+  'Mother',
+  'Sibling',
+  'Brother',
+  'Sister',
+  'Twin',
+  'Grandchild',
+  'Grandson',
+  'Granddaughter',
+  'Grandparent',
+  'Grandfather',
+  'Grandmother',
+  'Great-grandchild',
+  'Great-grandson',
+  'Great-granddaughter',
+  'Aunt',
+  'Uncle',
+  'Niece',
+  'Nephew',
+  'Cousin',
+  'Father-in-law',
+  'Mother-in-law',
+  'Son-in-law',
+  'Daughter-in-law',
+  'Brother-in-law',
+  'Sister-in-law',
+  'Niece-in-law',
+  'Nephew-in-law',
+  'Cousin-in-law',
+  'Aunt-in-law',
+  'Uncle-in-law',
+  'Grandfather-in-law',
+  'Grandmother-in-law',
+  'Grandson-in-law',
+  'Granddaughter-in-law',
+  'Stepfather',
+  'Stepmother',
+  'Stepson',
+  'Stepdaughter',
+  'Stepbrother',
+  'Stepsister',
+  'Half-brother',
+  'Half-sister',
+  'Co-wife',
+  'Godparent',
+  'Godfather',
+  'Godmother',
+  'Godchild',
+  'Godson',
+  'Goddaughter',
+  'Friend',
+  'Close friend',
+  'Childhood friend',
+  'Family friend',
+  'Neighbor',
+  'Colleague',
+  'Coworker',
+  'Classmate',
+  'Teacher',
+  'Student',
+  'Mentor',
+  'Caregiver',
+  'Church family',
+  'Church member',
+  'Pastor',
+  'Choir member',
+  'Community member',
+] as const;
+
+function normalizeRelationship(value: string) {
+  return value.toLowerCase().replace(/-/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+export function filterRelationships(query: string) {
+  const needle = normalizeRelationship(query);
+  if (!needle) return [...RELATIONSHIP_OPTIONS];
+
+  return RELATIONSHIP_OPTIONS.filter((option) => normalizeRelationship(option).includes(needle)).sort((a, b) => {
+    const aStarts = normalizeRelationship(a).startsWith(needle);
+    const bStarts = normalizeRelationship(b).startsWith(needle);
+    if (aStarts === bStarts) return 0;
+    return aStarts ? -1 : 1;
+  });
+}
