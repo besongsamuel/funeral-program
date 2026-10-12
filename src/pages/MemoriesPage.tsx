@@ -2,6 +2,7 @@ import { useMemorial } from '@/hooks/useMemorial';
 import { honoreeName } from '@/lib/honorees';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { FormattedText } from '@/components/ui/FormattedText';
+import { SubmittedAt } from '@/components/ui/SubmittedAt';
 import { motion } from 'framer-motion';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { Music } from 'lucide-react';
@@ -44,6 +45,7 @@ export function MemoriesPage() {
                     by {story.authorName}
                     {honoreeName(data.honorees, story.honoreeId) ? ` · in honour of ${honoreeName(data.honorees, story.honoreeId)}` : ''}
                   </p>
+                  <SubmittedAt at={story.createdAt} />
                   <FormattedText text={story.body} className="mt-4 leading-relaxed text-gray-700" />
                 </motion.article>
               ))}

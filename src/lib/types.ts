@@ -135,6 +135,7 @@ export interface Story {
   body: string;
   mediaUrl?: string;
   status: ContentStatus;
+  createdAt?: string;
 }
 
 export interface MediaItem {

@@ -16,6 +16,24 @@ export function formatDateTime(dateStr: string) {
   }
 }
 
+/** Date and time a tribute or story was submitted, in the reader's local time. */
+export function formatSubmitted(dateStr: string) {
+  try {
+    const date = parseISO(dateStr);
+    if (Number.isNaN(date.getTime())) return dateStr;
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZoneName: 'short',
+    }).format(date);
+  } catch {
+    return dateStr;
+  }
+}
+
 export function getFirstName(fullName: string) {
   return fullName.split(' ')[0];
 }

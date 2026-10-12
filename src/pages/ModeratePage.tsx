@@ -15,6 +15,7 @@ import {
 } from '@/lib/moderation-api';
 import { getModerationUrl } from '@/lib/amplify';
 import { FormattedText } from '@/components/ui/FormattedText';
+import { SubmittedAt } from '@/components/ui/SubmittedAt';
 import { MediaPreview } from '@/components/ui/MediaPreview';
 
 const CODE_PATTERN = /^[A-Z0-9]{4}$/;
@@ -196,6 +197,7 @@ export function ModeratePage() {
         {item.isGuestbookSignature ? ' (guestbook)' : ''}
         {item.relationship ? ` · ${item.relationship}` : ''}
       </p>
+      <SubmittedAt at={item.createdAt} />
       <FormattedText text={item.message ?? ''} className="mt-2 text-gray-700" />
       <div className="mt-4 flex flex-wrap gap-2">
         {(mode === 'pending' || mode === 'rejected' || mode === 'deleted') && (
@@ -243,6 +245,7 @@ export function ModeratePage() {
       <p className="text-sm font-medium text-memorial-700">
         Story: {item.title} by {item.authorName || 'Anonymous'}
       </p>
+      <SubmittedAt at={item.createdAt} />
       <FormattedText text={item.body ?? ''} className="mt-2 text-gray-700" />
       <div className="mt-4 flex flex-wrap gap-2">
         {(mode === 'pending' || mode === 'rejected' || mode === 'deleted') && (

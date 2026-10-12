@@ -7,6 +7,7 @@ import { HonoreePicker } from '@/components/ui/HonoreePicker';
 import { TributePreface } from '@/components/ui/TributePreface';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { FormattedText } from '@/components/ui/FormattedText';
+import { SubmittedAt } from '@/components/ui/SubmittedAt';
 import { submitTribute, submitStory } from '@/lib/data-service';
 import { honoreeName, matchesHonoree } from '@/lib/honorees';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
@@ -302,6 +303,7 @@ export function TributesPage() {
                   <p className="mt-3 text-sm font-medium text-memorial-700">
                     — {t.authorName}{t.relationship ? `, ${t.relationship}` : ''}
                   </p>
+                  <SubmittedAt at={t.createdAt} />
                   {honoreeName(honorees, t.honoreeId) && (
                     <p className="mt-1 text-xs uppercase tracking-wide text-memorial-500">
                       In honour of {honoreeName(honorees, t.honoreeId)}

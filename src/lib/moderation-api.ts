@@ -13,6 +13,7 @@ export interface ModerationTribute {
   message?: string;
   isGuestbookSignature?: boolean;
   status?: string;
+  createdAt?: string;
 }
 
 export interface ModerationStory {
@@ -21,6 +22,7 @@ export interface ModerationStory {
   title?: string;
   body?: string;
   status?: string;
+  createdAt?: string;
 }
 
 export interface ModerationPhoto {

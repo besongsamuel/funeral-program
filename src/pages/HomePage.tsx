@@ -8,6 +8,7 @@ import { FormattedText } from '@/components/ui/FormattedText';
 import { Countdown } from '@/components/ui/Countdown';
 import { honoreeName } from '@/lib/honorees';
 import { formatDate, getFirstName } from '@/lib/utils';
+import { SubmittedAt } from '@/components/ui/SubmittedAt';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { HeroBackdrop } from '@/components/ui/HeroBackdrop';
@@ -209,6 +210,7 @@ export function HomePage() {
               <footer className="mt-4 text-sm font-medium text-memorial-700">
                 — {featuredTribute.authorName}{featuredTribute.relationship ? `, ${featuredTribute.relationship}` : ''}
                 {honoreeName(honorees, featuredTribute.honoreeId) ? ` · for ${honoreeName(honorees, featuredTribute.honoreeId)}` : ''}
+                <SubmittedAt at={featuredTribute.createdAt} className="mt-1 block text-xs font-normal text-gray-500" />
               </footer>
             </motion.blockquote>
           </div>
@@ -235,6 +237,7 @@ export function HomePage() {
                   — {t.authorName}
                   {honoreeName(honorees, t.honoreeId) ? ` · for ${honoreeName(honorees, t.honoreeId)}` : ''}
                 </p>
+                <SubmittedAt at={t.createdAt} className="mt-1 block text-xs text-gray-500" />
               </motion.div>
             ))}
           </div>

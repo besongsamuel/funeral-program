@@ -175,6 +175,7 @@ export async function submitTribute(input: {
     ...input,
     isGuestbookSignature: input.isGuestbookSignature ?? false,
     status: 'approved',
+    createdAt: new Date().toISOString(),
   };
 
   if (!client) {
@@ -208,6 +209,7 @@ export async function submitStory(input: {
     memorialId: MEMORIAL_ID,
     ...input,
     status: 'approved',
+    createdAt: new Date().toISOString(),
   };
 
   if (!client) {

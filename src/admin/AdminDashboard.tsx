@@ -17,6 +17,7 @@ import { exportSubmissionsCsv } from '@/lib/export-submissions-csv';
 import { AdminContent } from './AdminContent';
 import { AdminAi, AdminProfile } from './AdminSettings';
 import { FormattedText } from '@/components/ui/FormattedText';
+import { SubmittedAt } from '@/components/ui/SubmittedAt';
 import { MediaPreview } from '@/components/ui/MediaPreview';
 import { Download } from 'lucide-react';
 
@@ -221,6 +222,7 @@ export function AdminDashboard() {
                     Tribute from {t.authorName}{forPerson(t.honoreeId)}
                     {t.isGuestbookSignature ? ' (guestbook)' : ''}
                   </p>
+                  <SubmittedAt at={t.createdAt} />
                   <FormattedText text={t.message} className="mt-2 text-gray-700" />
                   <div className="mt-4 flex flex-wrap gap-2">
                     <button onClick={() => handleModerate('tribute', t.id, 'approved')} className="btn-primary text-xs">Approve</button>
@@ -232,6 +234,7 @@ export function AdminDashboard() {
               {data.pendingStories.map((s) => (
                 <div key={s.id} className="card">
                   <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}{forPerson(s.honoreeId)}</p>
+                  <SubmittedAt at={s.createdAt} />
                   <FormattedText text={s.body} className="mt-2 text-gray-700" />
                   <div className="mt-4 flex flex-wrap gap-2">
                     <button onClick={() => handleModerate('story', s.id, 'approved')} className="btn-primary text-xs">Approve</button>
@@ -254,6 +257,7 @@ export function AdminDashboard() {
                     {t.relationship ? ` · ${t.relationship}` : ''}
                     {t.isGuestbookSignature ? ' (guestbook)' : ''}
                   </p>
+                  <SubmittedAt at={t.createdAt} />
                   <FormattedText text={t.message} className="mt-2 text-gray-700" />
                   <div className="mt-4 flex flex-wrap gap-2">
                     <button onClick={() => handleModerate('tribute', t.id, 'rejected')} className="btn-ghost text-xs text-red-600">Hide</button>
@@ -264,6 +268,7 @@ export function AdminDashboard() {
               {approvedStories.map((s) => (
                 <div key={s.id} className="card">
                   <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}{forPerson(s.honoreeId)}</p>
+                  <SubmittedAt at={s.createdAt} />
                   <FormattedText text={s.body} className="mt-2 text-gray-700" />
                   <div className="mt-4 flex flex-wrap gap-2">
                     <button onClick={() => handleModerate('story', s.id, 'rejected')} className="btn-ghost text-xs text-red-600">Hide</button>
@@ -279,6 +284,7 @@ export function AdminDashboard() {
                 {rejectedTributes.map((t) => (
                   <div key={t.id} className="card opacity-80">
                     <p className="text-sm font-medium text-memorial-700">Tribute from {t.authorName}{forPerson(t.honoreeId)}</p>
+                    <SubmittedAt at={t.createdAt} />
                     <FormattedText text={t.message} className="mt-2 text-gray-700" />
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button onClick={() => handleModerate('tribute', t.id, 'approved')} className="btn-primary text-xs">Approve</button>
@@ -290,6 +296,7 @@ export function AdminDashboard() {
                 {rejectedStories.map((s) => (
                   <div key={s.id} className="card opacity-80">
                     <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}{forPerson(s.honoreeId)}</p>
+                    <SubmittedAt at={s.createdAt} />
                     <FormattedText text={s.body} className="mt-2 text-gray-700" />
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button onClick={() => handleModerate('story', s.id, 'approved')} className="btn-primary text-xs">Approve</button>
@@ -307,6 +314,7 @@ export function AdminDashboard() {
                 {deletedTributes.map((t) => (
                   <div key={t.id} className="card opacity-80">
                     <p className="text-sm font-medium text-memorial-700">Tribute from {t.authorName}{forPerson(t.honoreeId)}</p>
+                    <SubmittedAt at={t.createdAt} />
                     <FormattedText text={t.message} className="mt-2 text-gray-700" />
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button onClick={() => handleModerate('tribute', t.id, 'approved')} className="btn-primary text-xs">Approve</button>
@@ -317,6 +325,7 @@ export function AdminDashboard() {
                 {deletedStories.map((s) => (
                   <div key={s.id} className="card opacity-80">
                     <p className="text-sm font-medium text-memorial-700">Story: {s.title} by {s.authorName}{forPerson(s.honoreeId)}</p>
+                    <SubmittedAt at={s.createdAt} />
                     <FormattedText text={s.body} className="mt-2 text-gray-700" />
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button onClick={() => handleModerate('story', s.id, 'approved')} className="btn-primary text-xs">Approve</button>
